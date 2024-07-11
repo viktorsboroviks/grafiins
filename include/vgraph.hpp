@@ -71,19 +71,21 @@ public:
         return _vertices;
     }
 
-    const std::vector<TVertex> get_edges()
+    const std::vector<TEdge> get_edges()
     {
         return _edges;
     }
 
-    void add_vertex(TVertex)
+    size_t add_vertex(TVertex)
     {
         // TODO: add
+        return 0;
     }
 
-    void add_edge(TVertex src, TVertex dst)
+    size_t add_edge(TVertex src, TVertex dst)
     {
         // TODO: add
+        return 0;
     }
 
     void remove_vertex(size_t i)
