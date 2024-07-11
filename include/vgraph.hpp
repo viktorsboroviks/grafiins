@@ -61,27 +61,15 @@ public:
 };
 
 class Edge {
-private:
-    size_t _src_vertex_i;
-    size_t _dst_vertex_i;
-
 public:
+    size_t src_vertex_i;
+    size_t dst_vertex_i;
     bool allocated = false;
 
     Edge(size_t in_src_i, size_t in_dst_i) :
-        _src_vertex_i(in_src_i),
-        _dst_vertex_i(in_dst_i)
+        src_vertex_i(in_src_i),
+        dst_vertex_i(in_dst_i)
     {
-    }
-
-    size_t get_src_vertex_i()
-    {
-        return _src_vertex_i;
-    }
-
-    size_t get_dst_vertex_i()
-    {
-        return _dst_vertex_i;
     }
 };
 
@@ -130,8 +118,8 @@ public:
 
     size_t add_vertex(TVertex v)
     {
+        // update vertex
         assert(_unallocated_vertices_i.size() <= _vertices.size());
-
         v.allocated = true;
 
         // first try to occupy unallocated indeces
@@ -170,15 +158,15 @@ public:
         assert(_unallocated_vertices_i.size() <= _vertices.size());
     }
 
-    size_t add_edge(TEdge e, size_t src_i, size_t dst_i)
+    size_t add_edge(TEdge e)
     {
         // check input
-        assert(src_i < _vertices.size());
-        assert(dst_i < _vertices.size());
-        assert(_vertices[src_i].allocated);
-        assert(_vertices[dst_i].allocated);
+        assert(e.src_vertex_i < _vertices.size());
+        assert(e.dst_vertex_i < _vertices.size());
+        assert(_vertices[e.src_vertex_i].allocated);
+        assert(_vertices[e.dst_vertex_i].allocated);
 
-        // allocate edge
+        // update edge
         assert(_unallocated_edges_i.size() <= _edges.size());
         e.allocated = true;
         size_t i;
@@ -196,8 +184,8 @@ public:
         }
 
         // update connected vertices
-        _vertices[src_i].connect_out_edge(i);
-        _vertices[dst_i].connect_in_edge(i);
+        _vertices[e.src_vertex_i].connect_out_edge(i);
+        _vertices[e.dst_vertex_i].connect_in_edge(i);
 
         return i;
     }
@@ -205,7 +193,7 @@ public:
     size_t add_edge(size_t src_i, size_t dst_i)
     {
         TEdge e(src_i, dst_i);
-        return add_edge(e, src_i, dst_i);
+        return add_edge(e);
     }
 
     void remove_edge(size_t i)
@@ -213,13 +201,13 @@ public:
         assert(i < _edges.size());
         assert(_edges[i].allocated);
         // disconnect vertices
-        const size_t src_i = _edges[i].get_src_vertex_i();
-        const size_t dst_i = _edges[i].get_dst_vertex_i();
+        const size_t src_i = _edges[i].src_vertex_i;
+        const size_t dst_i = _edges[i].dst_vertex_i;
         assert(src_i < _vertices.size());
         assert(_vertices[i].allocated);
         assert(dst_i < _vertices.size());
         assert(_vertices[i].allocated);
-        _vertices[src_i].disconnect_in_edge(i);
+        _vertices[src_i].disconnect_out_edge(i);
         _vertices[dst_i].disconnect_in_edge(i);
         // remove edge
         _edges[i].allocated = false;
