@@ -3,6 +3,8 @@
 #include <set>
 #include <queue>
 
+namespace vgraph {
+
 class Vertex {
 private:
     std::set<size_t> _in_edges_i;
@@ -33,6 +35,7 @@ public:
         return std::set<size_t> {};
     }
 };
+
 
 class Edge {
 private:
@@ -92,3 +95,11 @@ public:
         // TODO: add
     }
 };
+
+
+template <typename TVertex, typename TEdge>
+class DAG : Graph<TVertex, TEdge> {
+
+};
+
+}  // namespace vgraph
