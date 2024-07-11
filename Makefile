@@ -12,7 +12,7 @@ graph.o: examples/graph.cpp
 		examples/graph.cpp -o $@
 
 format: \
-		include/tante.hpp \
+		include/vgraph.hpp \
 		examples/graph.cpp
 	clang-format -i $^
 

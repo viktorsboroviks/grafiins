@@ -1,7 +1,7 @@
 #include <cassert>
-#include <vector>
-#include <set>
 #include <queue>
+#include <set>
+#include <vector>
 
 namespace vgraph {
 
@@ -9,6 +9,7 @@ class Vertex {
 private:
     std::set<size_t> _in_edges_i;
     std::set<size_t> _out_edges_i;
+
 public:
     size_t i;
     bool allocated = false;
@@ -26,21 +27,21 @@ public:
     const std::set<size_t> get_in_vertices_i()
     {
         // TODO: add
-        return std::set<size_t> {};
+        return std::set<size_t>{};
     }
 
     const std::set<size_t> get_out_vertices_i()
     {
         // TODO: add
-        return std::set<size_t> {};
+        return std::set<size_t>{};
     }
 };
-
 
 class Edge {
 private:
     size_t _src_vertex_i;
     size_t _dst_vertex_i;
+
 public:
     size_t i;
     bool allocated = false;
@@ -96,10 +97,7 @@ public:
     }
 };
 
-
 template <typename TVertex, typename TEdge>
-class DAG : Graph<TVertex, TEdge> {
-
-};
+class DAG : Graph<TVertex, TEdge> {};
 
 }  // namespace vgraph

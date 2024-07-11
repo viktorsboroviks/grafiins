@@ -1,6 +1,3 @@
 #include "vgraph.hpp"
 
-int main()
-{
-
-}
+int main() {}
