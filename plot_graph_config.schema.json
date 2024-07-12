@@ -1,0 +1,12 @@
+{
+    "description": "config for plot_graph.py",
+    "properties": {
+        "vertices_csv_path": {
+            "type": "string"
+        },
+        "edgex_csv_path": {
+            "type": "string"
+        }
+    },
+    "required": ["vertices_csv_path", "edgex_csv_path"]
+}

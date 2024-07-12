@@ -1,4 +1,4 @@
-.PHONY: all examples format clean
+.PHONY: all examples format clang-format black clean
 
 all: examples
 
@@ -11,10 +11,15 @@ graph.o: examples/graph.cpp
 		-I./include \
 		examples/graph.cpp -o $@
 
-format: \
+clang-format: \
 		include/vgraph.hpp \
 		examples/graph.cpp
 	clang-format -i $^
+
+black: plot_graph.py
+	black $^
+
+format: clang-format black
 
 clean:
 	rm -rf `find . -name "*.o"`

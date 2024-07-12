@@ -23,6 +23,10 @@ int main()
     assert(g.get_n_vertices() == 3);
     assert(g.get_vertices().size() == 3);
 
+    assert(g.add_vertex() == 3);
+    assert(g.get_n_vertices() == 4);
+    assert(g.get_vertices().size() == 4);
+
     assert(g.add_edge(vgraph::Edge(0, 1)) == 0);
     assert(g.add_edge(1, 2) == 1);
     assert(g.add_edge(2, 3) == 2);
