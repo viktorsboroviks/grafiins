@@ -25,13 +25,15 @@ int main()
 
     assert(g.add_edge(vgraph::Edge(0, 1)) == 0);
     assert(g.add_edge(1, 2) == 1);
+    assert(g.add_edge(2, 3) == 2);
+    assert(g.get_n_edges() == 3);
+    assert(g.get_edges().size() == 3);
+
+    g.remove_edge(1);
     assert(g.get_n_edges() == 2);
     assert(g.get_edges().size() == 2);
 
-    g.remove_edge(1);
-    assert(g.get_n_edges() == 1);
-    assert(g.get_edges().size() == 1);
-
+    g.to_csv("vertices.csv", "edges.csv");
     // TODO: add visualization at every step
     // - CLI/console/text
     // - other to be processed by plotly later

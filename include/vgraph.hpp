@@ -1,7 +1,11 @@
 #include <cassert>
 #include <queue>
 #include <set>
+#include <string>
 #include <vector>
+// #include <filesystem>
+#include <fstream>
+// #include <iostream>
 
 namespace vgraph {
 
@@ -213,6 +217,33 @@ public:
         _edges[i].allocated = false;
         _unallocated_edges_i.push(i);
         assert(_unallocated_edges_i.size() <= _edges.size());
+    }
+
+    void to_csv(std::string vertex_filepath, std::string edge_filepath)
+    {
+        std::ofstream fv(vertex_filepath);
+        fv.is_open();
+        fv << "vertex_i" << std::endl;
+        for (size_t i = 0; i < _vertices.size(); i++) {
+            if (!_vertices[i].allocated) {
+                continue;
+            }
+            fv << i << std::endl;
+        }
+        fv.close();
+
+        std::ofstream fe(edge_filepath);
+        fe.is_open();
+        fe << "edge_i,src_vertex_i,dst_vertex_i" << std::endl;
+        for (size_t i = 0; i < _edges.size(); i++) {
+            if (!_edges[i].allocated) {
+                continue;
+            }
+            fe << i << ",";
+            fe << _edges[i].src_vertex_i << ",";
+            fe << _edges[i].dst_vertex_i << std::endl;
+        }
+        fe.close();
     }
 };
 
