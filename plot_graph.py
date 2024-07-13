@@ -1,8 +1,9 @@
 import argparse
 import json
 import os
-import pandas as pd
 import jsonschema
+import pandas as pd
+import pydot
 
 CONFIG_SCHEMA_PATH = os.path.join(
     os.path.dirname(__file__),
@@ -27,5 +28,22 @@ edges_table = pd.read_csv(config_json["edges_csv_path"])
 print(vertices_table)
 print(edges_table)
 
-# TODO: add vgraph.py
-# TODO: add csv_to_graphviz
+g = pydot.Dot(graph_type="digraph")
+
+for i in vertices_table.index:
+    g.add_node(pydot.Node(str(vertices_table["vertex_i"].iloc[i]), label=f"v{i}"))
+
+for i in edges_table.index:
+    g.add_edge(
+        pydot.Edge(
+            str(edges_table["src_vertex_i"].iloc[i]),
+            str(edges_table["dst_vertex_i"].iloc[i]),
+            label=f"e{i}",
+        )
+    )
+
+g.write_svg("test.svg")
+
+# TODO: set output name from config
+# TODO: beautify, test more complex
+# TODO: rotate by 90 deg
