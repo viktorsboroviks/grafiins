@@ -24,11 +24,7 @@ jsonschema.validate(instance=args.config, schema=config_schema)
 vertices_table = pd.read_csv(config_json["vertices_csv_path"])
 edges_table = pd.read_csv(config_json["edges_csv_path"])
 
-# debug
-print(vertices_table)
-print(edges_table)
-
-g = pydot.Dot(graph_type="digraph")
+g = pydot.Dot(graph_type="digraph", rankdir="LR", ordering="in")
 
 for i in vertices_table.index:
     g.add_node(pydot.Node(str(vertices_table["vertex_i"].iloc[i]), label=f"v{i}"))
@@ -44,6 +40,14 @@ for i in edges_table.index:
 
 g.write_svg("test.svg")
 
-# TODO: set output name from config
-# TODO: beautify, test more complex
-# TODO: rotate by 90 deg
+# TODO:
+# - set from config
+#   - output file name
+#   - rotate by 90 deg
+#   - ordering = in/out/none
+# - set from csv
+#   - label
+#   - node style
+#     - https://graphviz.org/Gallery/directed/fsm.html
+#   - grouping
+#     - rank=same https://graphviz.readthedocs.io/en/stable/examples.html#rank-same-py
