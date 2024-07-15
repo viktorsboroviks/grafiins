@@ -16,6 +16,12 @@ private:
 
 public:
     bool allocated = false;
+    std::string label;
+
+    Vertex(std::string in_label = "") :
+        label(in_label)
+    {
+    }
 
     void connect_in_edge(size_t i)
     {
@@ -69,10 +75,12 @@ public:
     size_t src_vertex_i;
     size_t dst_vertex_i;
     bool allocated = false;
+    std::string label;
 
-    Edge(size_t in_src_i, size_t in_dst_i) :
+    Edge(size_t in_src_i, size_t in_dst_i, std::string in_label = "") :
         src_vertex_i(in_src_i),
-        dst_vertex_i(in_dst_i)
+        dst_vertex_i(in_dst_i),
+        label(in_label)
     {
     }
 };
@@ -223,25 +231,27 @@ public:
     {
         std::ofstream fv(vertex_filepath);
         fv.is_open();
-        fv << "vertex_i" << std::endl;
+        fv << "vertex_i,label" << std::endl;
         for (size_t i = 0; i < _vertices.size(); i++) {
             if (!_vertices[i].allocated) {
                 continue;
             }
-            fv << i << std::endl;
+            fv << i << ",";
+            fv << _vertices[i].label << std::endl;
         }
         fv.close();
 
         std::ofstream fe(edge_filepath);
         fe.is_open();
-        fe << "edge_i,src_vertex_i,dst_vertex_i" << std::endl;
+        fe << "edge_i,src_vertex_i,dst_vertex_i,label" << std::endl;
         for (size_t i = 0; i < _edges.size(); i++) {
             if (!_edges[i].allocated) {
                 continue;
             }
             fe << i << ",";
             fe << _edges[i].src_vertex_i << ",";
-            fe << _edges[i].dst_vertex_i << std::endl;
+            fe << _edges[i].dst_vertex_i << ",";
+            fe << _edges[i].label << std::endl;
         }
         fe.close();
     }

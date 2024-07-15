@@ -2,6 +2,7 @@ import argparse
 import json
 import os
 import jsonschema
+import numpy as np
 import pandas as pd
 import pydot
 
@@ -21,8 +22,8 @@ with open(args.config) as f:
 
 jsonschema.validate(instance=args.config, schema=config_schema)
 
-vertices_table = pd.read_csv(config_json["vertices_csv_path"])
-edges_table = pd.read_csv(config_json["edges_csv_path"])
+vertices_table = pd.read_csv(config_json["vertices_csv_path"]).replace(np.nan, "")
+edges_table = pd.read_csv(config_json["edges_csv_path"]).replace(np.nan, "")
 output_svg_path = config_json["output_svg_path"]
 
 graphviz_ordering = None
@@ -39,14 +40,19 @@ g = pydot.Dot(
 )
 
 for i in vertices_table.index:
-    g.add_node(pydot.Node(str(vertices_table["vertex_i"].iloc[i]), label=f"v{i}"))
+    g.add_node(
+        pydot.Node(
+            str(vertices_table["vertex_i"].iloc[i]),
+            label=vertices_table["label"].iloc[i],
+        )
+    )
 
 for i in edges_table.index:
     g.add_edge(
         pydot.Edge(
             str(edges_table["src_vertex_i"].iloc[i]),
             str(edges_table["dst_vertex_i"].iloc[i]),
-            label=f"e{i}",
+            label=edges_table["label"].iloc[i],
         )
     )
 
@@ -54,7 +60,6 @@ g.write_svg(output_svg_path)
 
 # TODO:
 # - set from csv
-#   - label
 #   - node style
 #     - https://graphviz.org/Gallery/directed/fsm.html
 #   - grouping
