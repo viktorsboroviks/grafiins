@@ -17,6 +17,8 @@ private:
 public:
     bool allocated = false;
     std::string label;
+    std::string graphviz_shape = "circle";
+    std::string graphviz_subgraph_same = "";
 
     Vertex(std::string in_label = "") :
         label(in_label)
@@ -106,26 +108,44 @@ public:
         return _edges.size() - _unallocated_edges_i.size();
     }
 
-    const std::vector<TVertex> get_vertices()
+    const std::vector<size_t> get_vertices_i()
     {
-        std::vector<TVertex> vertices;
-        for (auto& v : _vertices) {
-            if (v.allocated) {
-                vertices.push_back(v);
+        std::vector<size_t> idx;
+        for (size_t i = 0; i < _vertices.size(); i++) {
+            if (_vertices[i].allocated) {
+                idx.push_back(i);
             }
         }
-        return vertices;
+        return idx;
     }
 
-    const std::vector<TEdge> get_edges()
+    TVertex* get_vertex(size_t i)
     {
-        std::vector<TEdge> edges;
-        for (auto& e : _edges) {
-            if (e.allocated) {
-                edges.push_back(e);
+        assert(i < _vertices.size());
+        if (_vertices[i].allocated)
+            return &_vertices[i];
+
+        return nullptr;
+    }
+
+    const std::vector<size_t> get_edges_i()
+    {
+        std::vector<size_t> idx;
+        for (size_t i = 0; i < _edges.size(); i++) {
+            if (_edges[i].allocated) {
+                idx.push_back(i);
             }
         }
-        return edges;
+        return idx;
+    }
+
+    TVertex* get_edge(size_t i)
+    {
+        assert(i < _edges.size());
+        if (_edges[i].allocated)
+            return &_edges[i];
+
+        return nullptr;
     }
 
     size_t add_vertex(TVertex v)
@@ -145,12 +165,6 @@ public:
         // if no unallocated indeces available, extend storage
         _vertices.push_back(v);
         return _vertices.size() - 1;
-    }
-
-    size_t add_vertex()
-    {
-        TVertex v{};
-        return add_vertex(v);
     }
 
     void remove_vertex(size_t i)
@@ -202,12 +216,6 @@ public:
         return i;
     }
 
-    size_t add_edge(size_t src_i, size_t dst_i)
-    {
-        TEdge e(src_i, dst_i);
-        return add_edge(e);
-    }
-
     void remove_edge(size_t i)
     {
         assert(i < _edges.size());
@@ -231,13 +239,16 @@ public:
     {
         std::ofstream fv(vertex_filepath);
         fv.is_open();
-        fv << "vertex_i,label" << std::endl;
+        fv << "vertex_i,label,graphviz_shape,graphviz_subgraph_same"
+           << std::endl;
         for (size_t i = 0; i < _vertices.size(); i++) {
             if (!_vertices[i].allocated) {
                 continue;
             }
             fv << i << ",";
-            fv << _vertices[i].label << std::endl;
+            fv << _vertices[i].label << ",";
+            fv << _vertices[i].graphviz_shape << ",";
+            fv << _vertices[i].graphviz_subgraph_same << std::endl;
         }
         fv.close();
 

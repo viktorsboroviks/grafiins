@@ -39,11 +39,20 @@ g = pydot.Dot(
     ordering=graphviz_ordering,
 )
 
+subgraphs_same = {}
 for i in vertices_table.index:
-    g.add_node(
+    dst_g = g
+    graphviz_subgraph_same = vertices_table["graphviz_subgraph_same"].iloc[i]
+    if graphviz_subgraph_same:
+        if graphviz_subgraph_same not in subgraphs_same:
+            subgraphs_same[graphviz_subgraph_same] = pydot.Subgraph(rank="same")
+            g.add_subgraph(subgraphs_same[graphviz_subgraph_same])
+        dst_g = subgraphs_same[graphviz_subgraph_same]
+    dst_g.add_node(
         pydot.Node(
             str(vertices_table["vertex_i"].iloc[i]),
             label=vertices_table["label"].iloc[i],
+            shape=vertices_table["graphviz_shape"].iloc[i],
         )
     )
 
