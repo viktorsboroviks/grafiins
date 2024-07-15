@@ -25,7 +25,18 @@ vertices_table = pd.read_csv(config_json["vertices_csv_path"])
 edges_table = pd.read_csv(config_json["edges_csv_path"])
 output_svg_path = config_json["output_svg_path"]
 
-g = pydot.Dot(graph_type="digraph", rankdir="LR", ordering="in")
+graphviz_ordering = None
+if "ordering" in config_json["graphviz"]:
+    graphviz_ordering = config_json["graphviz"]["ordering"]
+graphviz_rankdir = None
+if "rankdir" in config_json["graphviz"]:
+    graphviz_rankdir = config_json["graphviz"]["rankdir"]
+
+g = pydot.Dot(
+    graph_type="digraph",
+    rankdir=graphviz_rankdir,
+    ordering=graphviz_ordering,
+)
 
 for i in vertices_table.index:
     g.add_node(pydot.Node(str(vertices_table["vertex_i"].iloc[i]), label=f"v{i}"))
@@ -42,9 +53,6 @@ for i in edges_table.index:
 g.write_svg(output_svg_path)
 
 # TODO:
-# - set from config
-#   - rotate by 90 deg
-#   - ordering = in/out/none
 # - set from csv
 #   - label
 #   - node style

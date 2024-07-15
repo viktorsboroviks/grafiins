@@ -22,6 +22,8 @@ graph.o: examples/graph.cpp
 		-I./include \
 		examples/graph.cpp -o $@
 
+format: clang-format black
+
 clang-format: \
 		include/vgraph.hpp \
 		examples/graph.cpp
@@ -29,8 +31,6 @@ clang-format: \
 
 black: scripts/plot_graph.py
 	black $^
-
-format: clang-format black
 
 clean:
 	rm -rf `find . -name "*.o"`

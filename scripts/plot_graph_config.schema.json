@@ -9,6 +9,17 @@
         },
         "output_svg_path": {
             "type": "string"
+        },
+        "graphviz": {
+            "type": "object",
+            "properties": {
+                "oredering": {
+                    "enum": ["in", "out"]
+                },
+                "rankdir": {
+                    "enum": ["LR", "RL", "TB", "BT"]
+                }
+            }
         }
     },
     "required": ["vertices_csv_path",
