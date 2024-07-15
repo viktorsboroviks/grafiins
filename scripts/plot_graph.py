@@ -23,6 +23,7 @@ jsonschema.validate(instance=args.config, schema=config_schema)
 
 vertices_table = pd.read_csv(config_json["vertices_csv_path"])
 edges_table = pd.read_csv(config_json["edges_csv_path"])
+output_svg_path = config_json["output_svg_path"]
 
 g = pydot.Dot(graph_type="digraph", rankdir="LR", ordering="in")
 
@@ -38,11 +39,10 @@ for i in edges_table.index:
         )
     )
 
-g.write_svg("test.svg")
+g.write_svg(output_svg_path)
 
 # TODO:
 # - set from config
-#   - output file name
 #   - rotate by 90 deg
 #   - ordering = in/out/none
 # - set from csv

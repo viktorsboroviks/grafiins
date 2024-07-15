@@ -6,7 +6,12 @@
         },
         "edgex_csv_path": {
             "type": "string"
+        },
+        "output_svg_path": {
+            "type": "string"
         }
     },
-    "required": ["vertices_csv_path", "edgex_csv_path"]
+    "required": ["vertices_csv_path",
+                 "edgex_csv_path",
+                 "output_svg_path"]
 }

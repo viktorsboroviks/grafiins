@@ -1,9 +1,20 @@
-.PHONY: all examples format clang-format black clean
+.PHONY: \
+	all \
+	examples \
+	examples_graph \
+	format \
+	clang-format \
+	black \
+	clean
 
 all: examples
 
 examples: \
-	graph.o
+	examples_graph
+
+examples_graph: graph.o examples/graph_config.json
+	./graph.o
+	python3 scripts/plot_graph.py examples/graph_config.json
 
 graph.o: examples/graph.cpp
 	g++ -Wall -Wextra -Werror -Wpedantic \
@@ -16,7 +27,7 @@ clang-format: \
 		examples/graph.cpp
 	clang-format -i $^
 
-black: plot_graph.py
+black: scripts/plot_graph.py
 	black $^
 
 format: clang-format black
@@ -24,4 +35,4 @@ format: clang-format black
 clean:
 	rm -rf `find . -name "*.o"`
 	rm -rf `find . -name "*.csv"`
-	rm -rf `find . -name "*.txt"`
+	rm -rf `find . -name "*.svg"`
