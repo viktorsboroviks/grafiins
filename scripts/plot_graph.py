@@ -68,8 +68,5 @@ for i in edges_table.index:
 g.write_svg(output_svg_path)
 
 # TODO:
-# - set from csv
-#   - node style
-#     - https://graphviz.org/Gallery/directed/fsm.html
-#   - grouping
-#     - rank=same https://graphviz.readthedocs.io/en/stable/examples.html#rank-same-py
+# - rename vertices to nodes
+# - add node width/height
