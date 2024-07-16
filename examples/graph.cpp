@@ -64,21 +64,18 @@ int main()
 
     for (size_t i : {1, 5, 6, 7, 10, 12}) {
         g.get_vertex(i)->graphviz_shape = "doublecircle";
-        g.get_vertex(i)->graphviz_subgraph_same = "inputs";
         g.get_vertex(i)->graphviz_width = 0.4;
+        g.get_vertex(i)->graphviz_cluster = "inputs";
     }
 
     for (size_t i : {0, 4}) {
         g.get_vertex(i)->graphviz_shape = "doublecircle";
-        g.get_vertex(i)->graphviz_subgraph_same = "outputs";
         g.get_vertex(i)->graphviz_width = 0.4;
+        g.get_vertex(i)->graphviz_cluster = "outputs";
     }
 
     g.to_csv("vertices.csv", "edges.csv");
-    // TODO: add visualization at every step
-    // - CLI/console/text
-    // - other to be processed by plotly later
-    // - dots/graphviz?
+
     // TODO: add check if 2 vertices are connected
     // TODO: add check if graph contains cycles
     // TODO: add DAG

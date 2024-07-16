@@ -18,7 +18,7 @@ public:
     bool allocated = false;
     std::string label;
     std::string graphviz_shape = "circle";
-    std::string graphviz_subgraph_same = "";
+    std::string graphviz_cluster = "";
     double graphviz_width = 0;
     double graphviz_height = 0;
 
@@ -242,7 +242,7 @@ public:
         std::ofstream fv(vertex_filepath);
         fv.is_open();
         fv << "vertex_i,label,";
-        fv << "graphviz_shape,graphviz_subgraph_same,";
+        fv << "graphviz_shape,graphviz_cluster,";
         fv << "graphviz_width,graphviz_height";
         fv << std::endl;
         for (size_t i = 0; i < _vertices.size(); i++) {
@@ -252,7 +252,7 @@ public:
             fv << i << ",";
             fv << _vertices[i].label << ",";
             fv << _vertices[i].graphviz_shape << ",";
-            fv << _vertices[i].graphviz_subgraph_same << ",";
+            fv << _vertices[i].graphviz_cluster << ",";
             fv << _vertices[i].graphviz_width << ",";
             fv << _vertices[i].graphviz_height << std::endl;
         }

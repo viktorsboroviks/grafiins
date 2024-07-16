@@ -39,20 +39,26 @@ g = pydot.Dot(
     ordering=graphviz_ordering,
 )
 
-subgraphs_same = {}
+clusters = {}
 for i in vertices_table.index:
-    dst_g = g
-    graphviz_subgraph_same = vertices_table["graphviz_subgraph_same"].iloc[i]
-    if graphviz_subgraph_same:
-        if graphviz_subgraph_same not in subgraphs_same:
-            subgraphs_same[graphviz_subgraph_same] = pydot.Subgraph(rank="same")
-            g.add_subgraph(subgraphs_same[graphviz_subgraph_same])
-        dst_g = subgraphs_same[graphviz_subgraph_same]
+    dst_graph = g
+
+    graphviz_cluster = vertices_table["graphviz_cluster"].iloc[i]
+    if graphviz_cluster not in clusters:
+        clusters[graphviz_cluster] = pydot.Subgraph(
+            f"cluster_{graphviz_cluster}",
+            label=graphviz_cluster,
+            peripheries=0,
+        )
+        g.add_subgraph(clusters[graphviz_cluster])
+    dst_graph = clusters[graphviz_cluster]
+
     graphviz_width = vertices_table["graphviz_width"].iloc[i]
     graphviz_height = vertices_table["graphviz_height"].iloc[i]
     # this property is required to enable width and/or height settings
     graphviz_fixedsize = bool(graphviz_width) or bool(graphviz_height)
-    dst_g.add_node(
+
+    dst_graph.add_node(
         pydot.Node(
             str(vertices_table["vertex_i"].iloc[i]),
             label=vertices_table["label"].iloc[i],
@@ -73,7 +79,3 @@ for i in edges_table.index:
     )
 
 g.write_svg(output_svg_path)
-
-# TODO:
-# - add clusters for inputs/outputs
-# - rename to grafins
