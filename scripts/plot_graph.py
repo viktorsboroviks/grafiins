@@ -41,8 +41,8 @@ g = pydot.Dot(
 
 clusters = {}
 for i in vertices_table.index:
-    dst_graph = g
-
+    # all nodes without graphviz_cluster are grouped under
+    # a cluster with empty string name
     graphviz_cluster = vertices_table["graphviz_cluster"].iloc[i]
     if graphviz_cluster not in clusters:
         clusters[graphviz_cluster] = pydot.Subgraph(
