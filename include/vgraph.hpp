@@ -19,6 +19,8 @@ public:
     std::string label;
     std::string graphviz_shape = "circle";
     std::string graphviz_subgraph_same = "";
+    double graphviz_width = 0;
+    double graphviz_height = 0;
 
     Vertex(std::string in_label = "") :
         label(in_label)
@@ -239,8 +241,10 @@ public:
     {
         std::ofstream fv(vertex_filepath);
         fv.is_open();
-        fv << "vertex_i,label,graphviz_shape,graphviz_subgraph_same"
-           << std::endl;
+        fv << "vertex_i,label,";
+        fv << "graphviz_shape,graphviz_subgraph_same,";
+        fv << "graphviz_width,graphviz_height";
+        fv << std::endl;
         for (size_t i = 0; i < _vertices.size(); i++) {
             if (!_vertices[i].allocated) {
                 continue;
@@ -248,7 +252,9 @@ public:
             fv << i << ",";
             fv << _vertices[i].label << ",";
             fv << _vertices[i].graphviz_shape << ",";
-            fv << _vertices[i].graphviz_subgraph_same << std::endl;
+            fv << _vertices[i].graphviz_subgraph_same << ",";
+            fv << _vertices[i].graphviz_width << ",";
+            fv << _vertices[i].graphviz_height << std::endl;
         }
         fv.close();
 

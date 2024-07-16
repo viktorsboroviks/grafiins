@@ -48,11 +48,18 @@ for i in vertices_table.index:
             subgraphs_same[graphviz_subgraph_same] = pydot.Subgraph(rank="same")
             g.add_subgraph(subgraphs_same[graphviz_subgraph_same])
         dst_g = subgraphs_same[graphviz_subgraph_same]
+    graphviz_width = vertices_table["graphviz_width"].iloc[i]
+    graphviz_height = vertices_table["graphviz_height"].iloc[i]
+    # this property is required to enable width and/or height settings
+    graphviz_fixedsize = bool(graphviz_width) or bool(graphviz_height)
     dst_g.add_node(
         pydot.Node(
             str(vertices_table["vertex_i"].iloc[i]),
             label=vertices_table["label"].iloc[i],
             shape=vertices_table["graphviz_shape"].iloc[i],
+            fixedsize=graphviz_fixedsize,
+            width=graphviz_width,
+            height=graphviz_height,
         )
     )
 
@@ -68,5 +75,5 @@ for i in edges_table.index:
 g.write_svg(output_svg_path)
 
 # TODO:
-# - rename vertices to nodes
-# - add node width/height
+# - add clusters for inputs/outputs
+# - rename to grafins
