@@ -1,0 +1,28 @@
+{
+    "description": "config for plot_graph.py",
+    "properties": {
+        "vertices_csv_path": {
+            "type": "string"
+        },
+        "edgex_csv_path": {
+            "type": "string"
+        },
+        "output_svg_path": {
+            "type": "string"
+        },
+        "graphviz": {
+            "type": "object",
+            "properties": {
+                "oredering": {
+                    "enum": ["in", "out"]
+                },
+                "rankdir": {
+                    "enum": ["LR", "RL", "TB", "BT"]
+                }
+            }
+        }
+    },
+    "required": ["vertices_csv_path",
+                 "edgex_csv_path",
+                 "output_svg_path"]
+}
