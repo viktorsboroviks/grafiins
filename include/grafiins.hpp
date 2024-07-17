@@ -1,13 +1,11 @@
 #include <cassert>
+#include <fstream>
 #include <queue>
 #include <set>
 #include <string>
 #include <vector>
-// #include <filesystem>
-#include <fstream>
-// #include <iostream>
 
-namespace vgraph {
+namespace grafiins {
 
 class Vertex {
 private:
@@ -51,26 +49,14 @@ public:
         _out_edges_i.erase(i);
     }
 
-    const std::set<size_t> get_in_edges_i()
+    const std::set<size_t> get_in_edges_i() const
     {
         return _in_edges_i;
     }
 
-    const std::set<size_t> get_out_edges_i()
+    const std::set<size_t> get_out_edges_i() const
     {
         return _out_edges_i;
-    }
-
-    const std::set<size_t> get_in_vertices_i()
-    {
-        // TODO: add
-        return std::set<size_t>{};
-    }
-
-    const std::set<size_t> get_out_vertices_i()
-    {
-        // TODO: add
-        return std::set<size_t>{};
     }
 };
 
@@ -141,13 +127,40 @@ public:
         return idx;
     }
 
-    TVertex* get_edge(size_t i)
+    TEdge* get_edge(size_t i)
     {
         assert(i < _edges.size());
         if (_edges[i].allocated)
             return &_edges[i];
 
         return nullptr;
+    }
+
+    const std::vector<size_t> get_out_vertices_i(size_t vertex_i)
+    {
+        assert(vertex_i < _vertices.size());
+        const TVertex* v = get_vertex(vertex_i);
+
+        const std::set<size_t> out_edges_i = v->get_out_edges_i();
+        std::vector<TEdge*> out_edges;
+        for (auto& oe_i : out_edges_i) {
+            out_edges.push_back(get_edge(oe_i));
+        }
+
+        std::vector<size_t> out_vertices_i;
+        for (auto p_oe : out_edges) {
+            out_vertices_i.push_back(p_oe->dst_vertex_i);
+        }
+
+        return out_vertices_i;
+    }
+
+    const std::vector<size_t> get_in_vertices_i(size_t vertex_i)
+    {
+        // TODO: add
+        (void)vertex_i;
+        std::vector<size_t> in_vertices_i;
+        return in_vertices_i;
     }
 
     size_t add_vertex(TVertex v)
@@ -272,9 +285,37 @@ public:
         }
         fe.close();
     }
+
+    // return true if any from src vertices is connected to
+    // any from the dst vertices
+    bool are_connected_any(const std::set<size_t> src_vertices_i,
+                           const std::set<size_t> dst_vertices_i)
+    {
+        assert(src_vertices_i.size() > 0);
+        assert(dst_vertices_i.size() > 0);
+
+        std::set<size_t> togo_i{src_vertices_i};
+        std::set<size_t> visited_i;
+        while (!togo_i.empty()) {
+            size_t vertex_i = *togo_i.begin();
+            if (dst_vertices_i.contains(vertex_i)) {
+                return true;
+            }
+            togo_i.erase(vertex_i);
+            visited_i.insert(vertex_i);
+
+            for (size_t out_vertex_i : get_out_vertices_i(vertex_i)) {
+                if (!visited_i.contains(out_vertex_i)) {
+                    togo_i.insert(out_vertex_i);
+                }
+            }
+        }
+
+        return false;
+    }
 };
 
 template <typename TVertex, typename TEdge>
 class DAG : Graph<TVertex, TEdge> {};
 
-}  // namespace vgraph
+}  // namespace grafiins
