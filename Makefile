@@ -25,7 +25,7 @@ graph.o: examples/graph.cpp
 format: clang-format black
 
 clang-format: \
-		include/vgraph.hpp \
+		include/grafiins.hpp \
 		examples/graph.cpp
 	clang-format -i $^
 

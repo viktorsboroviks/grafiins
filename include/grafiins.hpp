@@ -1,13 +1,11 @@
 #include <cassert>
+#include <fstream>
 #include <queue>
 #include <set>
 #include <string>
 #include <vector>
-// #include <filesystem>
-#include <fstream>
-// #include <iostream>
 
-namespace vgraph {
+namespace grafiins {
 
 class Vertex {
 private:
@@ -51,26 +49,14 @@ public:
         _out_edges_i.erase(i);
     }
 
-    const std::set<size_t> get_in_edges_i()
+    const std::set<size_t> get_in_edges_i() const
     {
         return _in_edges_i;
     }
 
-    const std::set<size_t> get_out_edges_i()
+    const std::set<size_t> get_out_edges_i() const
     {
         return _out_edges_i;
-    }
-
-    const std::set<size_t> get_in_vertices_i()
-    {
-        // TODO: add
-        return std::set<size_t>{};
-    }
-
-    const std::set<size_t> get_out_vertices_i()
-    {
-        // TODO: add
-        return std::set<size_t>{};
     }
 };
 
@@ -141,7 +127,7 @@ public:
         return idx;
     }
 
-    TVertex* get_edge(size_t i)
+    TEdge* get_edge(size_t i)
     {
         assert(i < _edges.size());
         if (_edges[i].allocated)
@@ -150,7 +136,35 @@ public:
         return nullptr;
     }
 
-    size_t add_vertex(TVertex v)
+    const std::vector<size_t> get_out_vertices_i(size_t vertex_i)
+    {
+        assert(vertex_i < _vertices.size());
+        const TVertex* v = get_vertex(vertex_i);
+
+        const std::set<size_t> out_edges_i = v->get_out_edges_i();
+        std::vector<TEdge*> out_edges;
+        for (auto& oe_i : out_edges_i) {
+            out_edges.push_back(get_edge(oe_i));
+        }
+
+        std::vector<size_t> out_vertices_i;
+        for (auto p_oe : out_edges) {
+            out_vertices_i.push_back(p_oe->dst_vertex_i);
+        }
+
+        return out_vertices_i;
+    }
+
+    const std::vector<size_t> get_in_vertices_i(size_t vertex_i)
+    {
+        // TODO: add
+        (void)vertex_i;
+        std::vector<size_t> in_vertices_i;
+        return in_vertices_i;
+    }
+
+    // int is used instead of size_t to be able to return -1
+    int add_vertex(TVertex v)
     {
         // update vertex
         assert(_unallocated_vertices_i.size() <= _vertices.size());
@@ -186,7 +200,8 @@ public:
         assert(_unallocated_vertices_i.size() <= _vertices.size());
     }
 
-    size_t add_edge(TEdge e)
+    // int is used instead of size_t to be able to return -1
+    int add_edge(TEdge e)
     {
         // check input
         assert(e.src_vertex_i < _vertices.size());
@@ -272,9 +287,121 @@ public:
         }
         fe.close();
     }
+
+    // return true if any from src vertices is connected to
+    // any from the dst vertices
+    bool are_connected_any(const std::set<size_t> src_vertices_i,
+                           const std::set<size_t> dst_vertices_i)
+    {
+        assert(src_vertices_i.size() > 0);
+        assert(dst_vertices_i.size() > 0);
+
+        std::set<size_t> togo_i{src_vertices_i};
+        std::set<size_t> visited_i;
+        while (!togo_i.empty()) {
+            size_t vertex_i = *togo_i.begin();
+            if (dst_vertices_i.contains(vertex_i)) {
+                return true;
+            }
+            togo_i.erase(vertex_i);
+            visited_i.insert(vertex_i);
+
+            for (size_t out_vertex_i : get_out_vertices_i(vertex_i)) {
+                if (!visited_i.contains(out_vertex_i)) {
+                    togo_i.insert(out_vertex_i);
+                }
+            }
+        }
+
+        return false;
+    }
+
+    // depth first search function that returns true if cycle found
+    // - visited = dfs is ongoing for this vetex
+    // - searched = dfs complete for this vertex and no cycles found
+    bool dfs_cycle_found(const size_t vertex_i,
+                         std::set<size_t>& visited_i,
+                         std::set<size_t>& searched_i)
+    {
+        if (searched_i.contains(vertex_i)) {
+            // this vertex was already searched
+            return false;
+        }
+
+        if (visited_i.contains(vertex_i)) {
+            // vertex already visited -> cycle found
+            return true;
+        }
+
+        visited_i.insert(vertex_i);
+
+        const std::vector<size_t> out_vertices_i =
+                get_out_vertices_i(vertex_i);
+        for (size_t out_vertex_i : out_vertices_i) {
+            if (dfs_cycle_found(out_vertex_i, visited_i, searched_i)) {
+                return true;
+            }
+        }
+
+        assert(visited_i.contains(vertex_i));
+        visited_i.erase(vertex_i);
+        assert(!searched_i.contains(vertex_i));
+        searched_i.insert(vertex_i);
+        return false;
+    }
+
+    // return true if this directed graph is cyclic
+    bool is_cyclic()
+    {
+        const std::vector<size_t> vertices_i = get_vertices_i();
+        std::set<size_t> search_i(vertices_i.begin(), vertices_i.end());
+        std::set<size_t> searched_i;
+        while (!search_i.empty()) {
+            std::set<size_t> visited_i;
+            size_t search_vertex_i = *search_i.begin();
+            if (dfs_cycle_found(search_vertex_i, visited_i, searched_i)) {
+                return true;
+            }
+            for (size_t i : searched_i) {
+                search_i.erase(i);
+            }
+        }
+
+        assert(search_i.size() == 0);
+        assert(searched_i.size() == get_n_vertices());
+        assert(searched_i.size() == vertices_i.size());
+#ifndef NDEBUG
+        for (size_t vi : vertices_i) {
+            assert(searched_i.contains(vi));
+        }
+#endif
+        return false;
+    }
 };
 
 template <typename TVertex, typename TEdge>
-class DAG : Graph<TVertex, TEdge> {};
+class DAG : public Graph<TVertex, TEdge> {
+public:
+    // int is used instead of size_t to be able to return -1
+    // - retval: -1 if adding edge creates cycle;
+    //           i of the added edge otherwise
+    int add_edge(TEdge e)
+    {
+        const int edge_i = Graph<TVertex, TEdge>::add_edge(e);
+        assert(edge_i >= 0);
 
-}  // namespace vgraph
+        const TEdge* edge = this->get_edge(edge_i);
+        assert(edge != nullptr);
+        const size_t vertex_i = edge->src_vertex_i;
+        std::set<size_t> visited_i;
+        std::set<size_t> searched_i;
+        if (!this->dfs_cycle_found(vertex_i, visited_i, searched_i)) {
+            return edge_i;
+        }
+
+        this->remove_edge(edge_i);
+        return -1;
+    }
+};
+
+}  // namespace grafiins
