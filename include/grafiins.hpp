@@ -1,5 +1,6 @@
 #include <cassert>
 #include <fstream>
+#include <iostream>
 #include <queue>
 #include <set>
 #include <string>
@@ -308,6 +309,67 @@ public:
                 if (!visited_i.contains(out_vertex_i)) {
                     togo_i.insert(out_vertex_i);
                 }
+            }
+        }
+
+        return false;
+    }
+
+    // depth first search function
+    // - returns true if cycle found
+    // - visited = dfs is ongoing for this vetex
+    // - searched = dfs complete for this vertex and no cycles found
+    bool dfs_cycle_found(const size_t vertex_i,
+                         std::set<size_t>& visited_i,
+                         std::set<size_t>& searched_i)
+    {
+        assert(!searched_i.contains(vertex_i));
+        if (visited_i.contains(vertex_i)) {
+            // vertex already visited -> cycle found
+            return true;
+        }
+
+        if (searched_i.contains(vertex_i)) {
+            // this vertex was already searched
+            return false;
+        }
+
+        visited_i.insert(vertex_i);
+
+        const std::vector<size_t> out_vertices_i =
+                get_out_vertices_i(vertex_i);
+        for (size_t out_vertex_i : out_vertices_i) {
+            if (dfs_cycle_found(out_vertex_i, visited_i, searched_i)) {
+                return true;
+            }
+        }
+
+        assert(visited_i.contains(vertex_i));
+        visited_i.erase(vertex_i);
+        assert(!searched_i.contains(vertex_i));
+        searched_i.insert(vertex_i);
+        return false;
+    }
+
+    bool is_cyclic()
+    {
+        std::vector<size_t> vertices_i = get_vertices_i();
+        std::set<size_t> search_i(vertices_i.begin(), vertices_i.end());
+        std::set<size_t> searched_i;
+        while (!search_i.empty()) {
+            std::set<size_t> visited_i;
+            size_t search_vertex_i = *search_i.begin();
+            if (dfs_cycle_found(search_vertex_i, visited_i, searched_i)) {
+                return true;
+            }
+            search_i.erase(searched_i.begin(), searched_i.end());
+            std::cout << "searched" << std::endl;
+            for (auto a : searched_i) {
+                std::cout << a << std::endl;
+            }
+            std::cout << "search" << std::endl;
+            for (auto a : search_i) {
+                std::cout << a << std::endl;
             }
         }
 

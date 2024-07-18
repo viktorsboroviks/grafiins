@@ -88,7 +88,8 @@ int main()
     assert(!g.are_connected_any({13, 7, 5}, {6}));
     assert(!g.are_connected_any({2, 8}, {0}));
 
-    // TODO: add check if graph contains cycles
+    assert(!g.is_cyclic());
+
     // TODO: add DAG
 
     return 0;
