@@ -163,7 +163,8 @@ public:
         return in_vertices_i;
     }
 
-    size_t add_vertex(TVertex v)
+    // int is used instead of size_t to be able to return -1
+    int add_vertex(TVertex v)
     {
         // update vertex
         assert(_unallocated_vertices_i.size() <= _vertices.size());
@@ -199,7 +200,8 @@ public:
         assert(_unallocated_vertices_i.size() <= _vertices.size());
     }
 
-    size_t add_edge(TEdge e)
+    // int is used instead of size_t to be able to return -1
+    int add_edge(TEdge e)
     {
         // check input
         assert(e.src_vertex_i < _vertices.size());
@@ -378,6 +380,28 @@ public:
 };
 
 template <typename TVertex, typename TEdge>
-class DAG : Graph<TVertex, TEdge> {};
+class DAG : public Graph<TVertex, TEdge> {
+public:
+    // int is used instead of size_t to be able to return -1
+    // - retval: -1 if adding edge creates cycle;
+    //           i of the added edge otherwise
+    int add_edge(TEdge e)
+    {
+        const int edge_i = Graph<TVertex, TEdge>::add_edge(e);
+        assert(edge_i >= 0);
+
+        const TEdge* edge = this->get_edge(edge_i);
+        assert(edge != nullptr);
+        const size_t vertex_i = edge->src_vertex_i;
+        std::set<size_t> visited_i;
+        std::set<size_t> searched_i;
+        if (!this->dfs_cycle_found(vertex_i, visited_i, searched_i)) {
+            return edge_i;
+        }
+
+        this->remove_edge(edge_i);
+        return -1;
+    }
+};
 
 }  // namespace grafiins

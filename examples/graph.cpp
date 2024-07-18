@@ -94,7 +94,22 @@ int main()
     g.remove_edge(11);
     assert(!g.is_cyclic());
 
-    // TODO: add DAG
+    grafiins::DAG<grafiins::Vertex, grafiins::Edge> dag;
+    assert(dag.add_vertex(grafiins::Vertex("v0")) == 0);
+    assert(dag.add_vertex(grafiins::Vertex("v1")) == 1);
+    assert(dag.add_vertex(grafiins::Vertex("v2")) == 2);
+    assert(dag.get_n_vertices() == 3);
+    assert(dag.get_vertices_i().size() == 3);
+
+    assert(dag.add_edge(grafiins::Edge(0, 1, "e0")) == 0);
+    assert(dag.add_edge(grafiins::Edge(1, 2, "e1")) == 1);
+    assert(dag.get_n_edges() == 2);
+    assert(dag.get_edges_i().size() == 2);
+    assert(!dag.is_cyclic());
+
+    assert(dag.add_edge(grafiins::Edge(2, 0, "cyclic edge!")) == -1);
+    assert(!dag.is_cyclic());
+    assert(dag.get_n_edges() == 2);
 
     return 0;
 }
