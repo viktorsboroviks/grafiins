@@ -1,6 +1,5 @@
 #include <cassert>
 #include <fstream>
-#include <iostream>
 #include <queue>
 #include <set>
 #include <string>
@@ -315,23 +314,21 @@ public:
         return false;
     }
 
-    // depth first search function
-    // - returns true if cycle found
+    // depth first search function that returns true if cycle found
     // - visited = dfs is ongoing for this vetex
     // - searched = dfs complete for this vertex and no cycles found
     bool dfs_cycle_found(const size_t vertex_i,
                          std::set<size_t>& visited_i,
                          std::set<size_t>& searched_i)
     {
-        assert(!searched_i.contains(vertex_i));
-        if (visited_i.contains(vertex_i)) {
-            // vertex already visited -> cycle found
-            return true;
-        }
-
         if (searched_i.contains(vertex_i)) {
             // this vertex was already searched
             return false;
+        }
+
+        if (visited_i.contains(vertex_i)) {
+            // vertex already visited -> cycle found
+            return true;
         }
 
         visited_i.insert(vertex_i);
@@ -351,9 +348,10 @@ public:
         return false;
     }
 
+    // return true if this directed graph is cyclic
     bool is_cyclic()
     {
-        std::vector<size_t> vertices_i = get_vertices_i();
+        const std::vector<size_t> vertices_i = get_vertices_i();
         std::set<size_t> search_i(vertices_i.begin(), vertices_i.end());
         std::set<size_t> searched_i;
         while (!search_i.empty()) {
@@ -362,17 +360,19 @@ public:
             if (dfs_cycle_found(search_vertex_i, visited_i, searched_i)) {
                 return true;
             }
-            search_i.erase(searched_i.begin(), searched_i.end());
-            std::cout << "searched" << std::endl;
-            for (auto a : searched_i) {
-                std::cout << a << std::endl;
-            }
-            std::cout << "search" << std::endl;
-            for (auto a : search_i) {
-                std::cout << a << std::endl;
+            for (size_t i : searched_i) {
+                search_i.erase(i);
             }
         }
 
+        assert(search_i.size() == 0);
+        assert(searched_i.size() == get_n_vertices());
+        assert(searched_i.size() == vertices_i.size());
+#ifndef NDEBUG
+        for (size_t vi : vertices_i) {
+            assert(searched_i.contains(vi));
+        }
+#endif
         return false;
     }
 };

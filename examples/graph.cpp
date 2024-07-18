@@ -89,6 +89,10 @@ int main()
     assert(!g.are_connected_any({2, 8}, {0}));
 
     assert(!g.is_cyclic());
+    assert(g.add_edge(grafiins::Edge(3, 10, "cyclyc edge!")) == 11);
+    assert(g.is_cyclic());
+    g.remove_edge(11);
+    assert(!g.is_cyclic());
 
     // TODO: add DAG
 
