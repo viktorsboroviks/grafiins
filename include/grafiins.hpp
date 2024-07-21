@@ -84,6 +84,13 @@ private:
     std::queue<size_t> _unallocated_edges_i;
 
 public:
+    bool allow_parallel_edges = false;
+
+    Graph(bool allow_parallel_edges = false) :
+        allow_parallel_edges(allow_parallel_edges)
+    {
+    }
+
     size_t get_n_vertices()
     {
         assert(_unallocated_vertices_i.size() <= _vertices.size());
@@ -208,6 +215,15 @@ public:
         assert(e.dst_vertex_i < _vertices.size());
         assert(_vertices[e.src_vertex_i].allocated);
         assert(_vertices[e.dst_vertex_i].allocated);
+
+        if (!allow_parallel_edges) {
+            auto& out_vertices_i = get_out_vertices_i(e.src_vertex_i);
+            for (size_t vi : out_vertices_i) {
+                if (vi == e.dst_vertex_i) {
+                    return -1;
+                }
+            }
+        }
 
         // update edge
         assert(_unallocated_edges_i.size() <= _edges.size());
@@ -388,13 +404,16 @@ public:
     int add_edge(TEdge e)
     {
         const int edge_i = Graph<TVertex, TEdge>::add_edge(e);
-        assert(edge_i >= 0);
+        if (edge_i < 0) {
+            return -1;
+        }
 
         const TEdge* edge = this->get_edge(edge_i);
         assert(edge != nullptr);
         const size_t vertex_i = edge->src_vertex_i;
         std::set<size_t> visited_i;
         std::set<size_t> searched_i;
+
         if (!this->dfs_cycle_found(vertex_i, visited_i, searched_i)) {
             return edge_i;
         }
