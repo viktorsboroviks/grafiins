@@ -114,7 +114,7 @@ public:
         return idx;
     }
 
-    TVertex* get_vertex(size_t i)
+    TVertex* get_vertex(const size_t i)
     {
         assert(i < _vertices.size());
         if (_vertices[i].allocated)
@@ -134,7 +134,7 @@ public:
         return idx;
     }
 
-    TEdge* get_edge(size_t i)
+    TEdge* get_edge(const size_t i)
     {
         assert(i < _edges.size());
         if (_edges[i].allocated)
@@ -143,7 +143,7 @@ public:
         return nullptr;
     }
 
-    const std::vector<size_t> get_out_vertices_i(size_t vertex_i)
+    const std::vector<size_t> get_out_vertices_i(const size_t vertex_i)
     {
         assert(vertex_i < _vertices.size());
         const TVertex* v = get_vertex(vertex_i);
@@ -178,28 +178,33 @@ public:
         v.allocated = true;
 
         // first try to occupy unallocated indeces
+        size_t i;
         if (!_unallocated_vertices_i.empty()) {
-            size_t i = _unallocated_vertices_i.front();
+            i = _unallocated_vertices_i.front();
             _vertices[i] = v;
             _unallocated_vertices_i.pop();
-            return i;
+            goto exit;
         }
 
         // if no unallocated indeces available, extend storage
         _vertices.push_back(v);
-        return _vertices.size() - 1;
+        i = _vertices.size() - 1;
+    exit:
+        assert(_vertices[i].allocated);
+        return i;
     }
 
-    void remove_vertex(size_t i)
+    void remove_vertex(const size_t i)
     {
         assert(i < _vertices.size());
         assert(_vertices[i].allocated);
+
         // remove connected edges
-        for (size_t i : _vertices[i].get_in_edges_i()) {
-            remove_edge(i);
+        for (size_t ei : _vertices[i].get_in_edges_i()) {
+            remove_edge(ei);
         }
-        for (size_t i : _vertices[i].get_out_edges_i()) {
-            remove_edge(i);
+        for (size_t ei : _vertices[i].get_out_edges_i()) {
+            remove_edge(ei);
         }
         // remove vertex
         _vertices[i].allocated = false;
@@ -246,10 +251,11 @@ public:
         _vertices[e.src_vertex_i].connect_out_edge(i);
         _vertices[e.dst_vertex_i].connect_in_edge(i);
 
+        assert(_edges[i].allocated);
         return i;
     }
 
-    void remove_edge(size_t i)
+    void remove_edge(const size_t i)
     {
         assert(i < _edges.size());
         assert(_edges[i].allocated);
@@ -257,9 +263,9 @@ public:
         const size_t src_i = _edges[i].src_vertex_i;
         const size_t dst_i = _edges[i].dst_vertex_i;
         assert(src_i < _vertices.size());
-        assert(_vertices[i].allocated);
+        assert(_vertices[src_i].allocated);
         assert(dst_i < _vertices.size());
-        assert(_vertices[i].allocated);
+        assert(_vertices[dst_i].allocated);
         _vertices[src_i].disconnect_out_edge(i);
         _vertices[dst_i].disconnect_in_edge(i);
         // remove edge
