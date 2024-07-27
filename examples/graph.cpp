@@ -1,3 +1,5 @@
+#include <stdexcept>
+
 #include "grafiins.hpp"
 
 int main()
@@ -107,7 +109,12 @@ int main()
     assert(dag.get_edges_i().size() == 2);
     assert(!dag.is_cyclic());
 
-    assert(dag.add_edge(grafiins::Edge(2, 0, "cyclic edge!")) == -1);
+    try {
+        dag.add_edge(grafiins::Edge(2, 0, "cyclic edge!"));
+    }
+    catch (const std::logic_error& e) {
+    };
+
     assert(!dag.is_cyclic());
     assert(dag.get_n_edges() == 2);
 
