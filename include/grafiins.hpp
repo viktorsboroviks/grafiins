@@ -2,18 +2,17 @@
 #include <fstream>
 #include <queue>
 #include <set>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
 namespace grafiins {
 
-class Vertex {
-private:
+struct Vertex {
+    bool _allocated = false;
     std::set<size_t> _in_edges_i;
     std::set<size_t> _out_edges_i;
 
-public:
-    bool allocated = false;
     std::string label;
     std::string graphviz_shape = "circle";
     std::string graphviz_cluster = "";
@@ -24,53 +23,19 @@ public:
         label(in_label)
     {
     }
-
-    void connect_in_edge(size_t i)
-    {
-        assert(!_in_edges_i.contains(i));
-        _in_edges_i.insert(i);
-    }
-
-    void connect_out_edge(size_t i)
-    {
-        assert(!_out_edges_i.contains(i));
-        _out_edges_i.insert(i);
-    }
-
-    void disconnect_in_edge(size_t i)
-    {
-        assert(_in_edges_i.contains(i));
-        _in_edges_i.erase(i);
-    }
-
-    void disconnect_out_edge(size_t i)
-    {
-        assert(_out_edges_i.contains(i));
-        _out_edges_i.erase(i);
-    }
-
-    const std::set<size_t> get_in_edges_i() const
-    {
-        return _in_edges_i;
-    }
-
-    const std::set<size_t> get_out_edges_i() const
-    {
-        return _out_edges_i;
-    }
 };
 
-class Edge {
-public:
-    size_t src_vertex_i;
-    size_t dst_vertex_i;
-    bool allocated = false;
+struct Edge {
+    bool _allocated = false;
+    size_t _src_vertex_i;
+    size_t _dst_vertex_i;
+
     std::string label;
 
-    Edge(size_t in_src_i, size_t in_dst_i, std::string in_label = "") :
-        src_vertex_i(in_src_i),
-        dst_vertex_i(in_dst_i),
-        label(in_label)
+    Edge(size_t src_i, size_t dst_i, std::string label = "") :
+        _src_vertex_i(src_i),
+        _dst_vertex_i(dst_i),
+        label(label)
     {
     }
 };
@@ -82,6 +47,67 @@ private:
     std::vector<TEdge> _edges;
     std::queue<size_t> _unallocated_vertices_i;
     std::queue<size_t> _unallocated_edges_i;
+
+    size_t _alloc_vertex(TVertex v)
+    {
+        // update vertex
+        assert(_unallocated_vertices_i.size() <= _vertices.size());
+        v._allocated = true;
+
+        // first try to occupy unallocated indeces
+        size_t i;
+        if (!_unallocated_vertices_i.empty()) {
+            i = _unallocated_vertices_i.front();
+            _vertices[i] = v;
+            _unallocated_vertices_i.pop();
+            goto exit;
+        }
+
+        // if no unallocated indeces available, extend storage
+        _vertices.push_back(v);
+        i = _vertices.size() - 1;
+    exit:
+        assert(_vertices[i]._allocated);
+        return i;
+    }
+
+    void _free_vertex(size_t i)
+    {
+        assert(i < _vertices.size());
+        assert(_vertices[i]._allocated);
+
+        _vertices[i]._allocated = false;
+        _unallocated_vertices_i.push(i);
+        assert(_unallocated_vertices_i.size() <= _vertices.size());
+    }
+
+    size_t _alloc_edge(TEdge e)
+    {
+        assert(_unallocated_edges_i.size() <= _edges.size());
+        e._allocated = true;
+
+        // first try to occupy unallocated indeces
+        size_t i;
+        if (!_unallocated_edges_i.empty()) {
+            i = _unallocated_edges_i.front();
+            _edges[i] = e;
+            _unallocated_edges_i.pop();
+        }
+        // if no unallocated indeces available, extend storage
+        else {
+            _edges.push_back(e);
+            i = _edges.size() - 1;
+        }
+
+        return i;
+    }
+
+    void _free_edge(size_t i)
+    {
+        _edges[i]._allocated = false;
+        _unallocated_edges_i.push(i);
+        assert(_unallocated_edges_i.size() <= _edges.size());
+    }
 
 public:
     bool allow_parallel_edges = false;
@@ -107,17 +133,17 @@ public:
     {
         std::vector<size_t> idx;
         for (size_t i = 0; i < _vertices.size(); i++) {
-            if (_vertices[i].allocated) {
+            if (_vertices[i]._allocated) {
                 idx.push_back(i);
             }
         }
         return idx;
     }
 
-    TVertex* get_vertex(const size_t i)
+    TVertex* get_vertex(size_t i)
     {
         assert(i < _vertices.size());
-        if (_vertices[i].allocated)
+        if (_vertices[i]._allocated)
             return &_vertices[i];
 
         return nullptr;
@@ -127,36 +153,31 @@ public:
     {
         std::vector<size_t> idx;
         for (size_t i = 0; i < _edges.size(); i++) {
-            if (_edges[i].allocated) {
+            if (_edges[i]._allocated) {
                 idx.push_back(i);
             }
         }
         return idx;
     }
 
-    TEdge* get_edge(const size_t i)
+    TEdge* get_edge(size_t i)
     {
         assert(i < _edges.size());
-        if (_edges[i].allocated)
+        if (_edges[i]._allocated)
             return &_edges[i];
 
         return nullptr;
     }
 
-    const std::vector<size_t> get_out_vertices_i(const size_t vertex_i)
+    const std::vector<size_t> get_out_vertices_i(size_t vertex_i)
     {
         assert(vertex_i < _vertices.size());
         const TVertex* v = get_vertex(vertex_i);
-
-        const std::set<size_t> out_edges_i = v->get_out_edges_i();
-        std::vector<TEdge*> out_edges;
-        for (auto& oe_i : out_edges_i) {
-            out_edges.push_back(get_edge(oe_i));
-        }
+        assert(v != nullptr);
 
         std::vector<size_t> out_vertices_i;
-        for (auto p_oe : out_edges) {
-            out_vertices_i.push_back(p_oe->dst_vertex_i);
+        for (auto& oe_i : v->_out_edges_i) {
+            out_vertices_i.push_back(get_edge(oe_i)->_dst_vertex_i);
         }
 
         return out_vertices_i;
@@ -164,114 +185,84 @@ public:
 
     const std::vector<size_t> get_in_vertices_i(size_t vertex_i)
     {
-        // TODO: add
-        (void)vertex_i;
+        assert(vertex_i < _vertices.size());
+        const TVertex* v = get_vertex(vertex_i);
+        assert(v != nullptr);
+
         std::vector<size_t> in_vertices_i;
+        for (auto& oe_i : v->_in_edges_i) {
+            in_vertices_i.push_back(get_edge(oe_i)->src_vertex_i);
+        }
+
         return in_vertices_i;
     }
 
-    // int is used instead of size_t to be able to return -1
-    int add_vertex(TVertex v)
+    size_t add_vertex(TVertex v)
     {
-        // update vertex
-        assert(_unallocated_vertices_i.size() <= _vertices.size());
-        v.allocated = true;
-
-        // first try to occupy unallocated indeces
-        size_t i;
-        if (!_unallocated_vertices_i.empty()) {
-            i = _unallocated_vertices_i.front();
-            _vertices[i] = v;
-            _unallocated_vertices_i.pop();
-            goto exit;
-        }
-
-        // if no unallocated indeces available, extend storage
-        _vertices.push_back(v);
-        i = _vertices.size() - 1;
-    exit:
-        assert(_vertices[i].allocated);
-        return i;
+        return _alloc_vertex(v);
     }
 
-    void remove_vertex(const size_t i)
+    void remove_vertex(size_t i)
     {
         assert(i < _vertices.size());
-        assert(_vertices[i].allocated);
+        assert(_vertices[i]._allocated);
 
         // remove connected edges
-        for (size_t ei : _vertices[i].get_in_edges_i()) {
+        for (size_t ei : _vertices[i]._in_edges_i) {
             remove_edge(ei);
         }
-        for (size_t ei : _vertices[i].get_out_edges_i()) {
+        for (size_t ei : _vertices[i]._out_edges_i) {
             remove_edge(ei);
         }
-        // remove vertex
-        _vertices[i].allocated = false;
-        _unallocated_vertices_i.push(i);
-        assert(_unallocated_vertices_i.size() <= _vertices.size());
+
+        _free_vertex(i);
     }
 
-    // int is used instead of size_t to be able to return -1
-    int add_edge(TEdge e)
+    size_t add_edge(TEdge e)
     {
         // check input
-        assert(e.src_vertex_i < _vertices.size());
-        assert(e.dst_vertex_i < _vertices.size());
-        assert(_vertices[e.src_vertex_i].allocated);
-        assert(_vertices[e.dst_vertex_i].allocated);
+        assert(e._src_vertex_i < _vertices.size());
+        assert(e._dst_vertex_i < _vertices.size());
+        assert(_vertices[e._src_vertex_i]._allocated);
+        assert(_vertices[e._dst_vertex_i]._allocated);
 
         if (!allow_parallel_edges) {
-            auto& out_vertices_i = get_out_vertices_i(e.src_vertex_i);
-            for (size_t vi : out_vertices_i) {
-                if (vi == e.dst_vertex_i) {
-                    return -1;
+            for (size_t vi : get_out_vertices_i(e._src_vertex_i)) {
+                if (vi == e._dst_vertex_i) {
+                    throw std::logic_error("Parallel edges not allowed.");
                 }
             }
         }
 
         // update edge
-        assert(_unallocated_edges_i.size() <= _edges.size());
-        e.allocated = true;
-        size_t i;
-
-        // first try to occupy unallocated indeces
-        if (!_unallocated_edges_i.empty()) {
-            i = _unallocated_edges_i.front();
-            _edges[i] = e;
-            _unallocated_edges_i.pop();
-        }
-        // if no unallocated indeces available, extend storage
-        else {
-            _edges.push_back(e);
-            i = _edges.size() - 1;
-        }
+        size_t i = _alloc_edge(e);
 
         // update connected vertices
-        _vertices[e.src_vertex_i].connect_out_edge(i);
-        _vertices[e.dst_vertex_i].connect_in_edge(i);
+        _vertices[e._src_vertex_i]._out_edges_i.insert(i);
+        _vertices[e._dst_vertex_i]._in_edges_i.insert(i);
 
-        assert(_edges[i].allocated);
+        assert(_edges[i]._allocated);
         return i;
     }
 
-    void remove_edge(const size_t i)
+    void remove_edge(size_t i)
     {
         assert(i < _edges.size());
-        assert(_edges[i].allocated);
+        assert(_edges[i]._allocated);
+
         // disconnect vertices
-        const size_t src_i = _edges[i].src_vertex_i;
-        const size_t dst_i = _edges[i].dst_vertex_i;
+        const size_t src_i = _edges[i]._src_vertex_i;
         assert(src_i < _vertices.size());
-        assert(_vertices[src_i].allocated);
+        assert(_vertices[src_i]._allocated);
+        _vertices[src_i]._out_edges_i.erase(i);
+
+        const size_t dst_i = _edges[i]._dst_vertex_i;
         assert(dst_i < _vertices.size());
-        assert(_vertices[dst_i].allocated);
-        _vertices[src_i].disconnect_out_edge(i);
-        _vertices[dst_i].disconnect_in_edge(i);
+        assert(_vertices[dst_i]._allocated);
+        _vertices[dst_i]._in_edges_i.erase(i);
+
         // remove edge
-        _edges[i].allocated = false;
-        _unallocated_edges_i.push(i);
-        assert(_unallocated_edges_i.size() <= _edges.size());
+        _free_edge(i);
     }
 
     void to_csv(std::string vertex_filepath, std::string edge_filepath)
@@ -283,7 +274,7 @@ public:
         fv << "graphviz_width,graphviz_height";
         fv << std::endl;
         for (size_t i = 0; i < _vertices.size(); i++) {
-            if (!_vertices[i].allocated) {
+            if (!_vertices[i]._allocated) {
                 continue;
             }
             fv << i << ",";
@@ -299,12 +290,12 @@ public:
         fe.is_open();
         fe << "edge_i,src_vertex_i,dst_vertex_i,label" << std::endl;
         for (size_t i = 0; i < _edges.size(); i++) {
-            if (!_edges[i].allocated) {
+            if (!_edges[i]._allocated) {
                 continue;
             }
             fe << i << ",";
-            fe << _edges[i].src_vertex_i << ",";
-            fe << _edges[i].dst_vertex_i << ",";
+            fe << _edges[i]._src_vertex_i << ",";
+            fe << _edges[i]._dst_vertex_i << ",";
             fe << _edges[i].label << std::endl;
         }
         fe.close();
@@ -404,19 +395,13 @@ public:
 template <typename TVertex, typename TEdge>
 class DAG : public Graph<TVertex, TEdge> {
 public:
-    // int is used instead of size_t to be able to return -1
-    // - retval: -1 if adding edge creates cycle;
-    //           i of the added edge otherwise
-    int add_edge(TEdge e)
+    size_t add_edge(TEdge e)
     {
-        const int edge_i = Graph<TVertex, TEdge>::add_edge(e);
-        if (edge_i < 0) {
-            return -1;
-        }
+        const size_t edge_i = Graph<TVertex, TEdge>::add_edge(e);
 
         const TEdge* edge = this->get_edge(edge_i);
         assert(edge != nullptr);
-        const size_t vertex_i = edge->src_vertex_i;
+        const size_t vertex_i = edge->_src_vertex_i;
         std::set<size_t> visited_i;
         std::set<size_t> searched_i;
 
@@ -425,7 +410,7 @@ public:
         }
 
         this->remove_edge(edge_i);
-        return -1;
+        throw std::logic_error("Adding edge creates cycle in DAG.");
     }
 };
 
