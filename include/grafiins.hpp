@@ -117,14 +117,9 @@ public:
         return in_vertices_i;
     }
 
-    size_t add_vertex_at(size_t i, TVertex v)
+    size_t add_vertex(TVertex v, size_t i = garaza::FIRST_AVAILABLE_I)
     {
-        return _vertices.add_at(i, v);
-    }
-
-    size_t add_vertex(TVertex v)
-    {
-        return add_vertex_at(garaza::FIRST_AVAILABLE_I, v);
+        return _vertices.add(v, i);
     }
 
     void remove_vertex(size_t i)
@@ -142,7 +137,7 @@ public:
         _vertices.remove(i);
     }
 
-    size_t add_edge_at(size_t i, TEdge e)
+    size_t add_edge(TEdge e, size_t i = garaza::FIRST_AVAILABLE_I)
     {
         // check input
         assert(_vertices.contains_i(e._src_vertex_i));
@@ -157,18 +152,13 @@ public:
         }
 
         // add edge
-        const size_t ret_i = _edges.add_at(i, e);
+        const size_t ret_i = _edges.add(e, i);
 
         // update connected vertices
         _vertices.at(e._src_vertex_i)->_out_edges_i.insert(ret_i);
         _vertices.at(e._dst_vertex_i)->_in_edges_i.insert(ret_i);
 
         return ret_i;
-    }
-
-    size_t add_edge(TEdge e)
-    {
-        return add_edge_at(garaza::FIRST_AVAILABLE_I, e);
     }
 
     void remove_edge(size_t i)
