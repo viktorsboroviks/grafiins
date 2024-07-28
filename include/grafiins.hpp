@@ -11,7 +11,6 @@
 namespace grafiins {
 
 struct Vertex {
-    bool _allocated = false;
     std::set<size_t> _in_edges_i;
     std::set<size_t> _out_edges_i;
 
@@ -28,7 +27,6 @@ struct Vertex {
 };
 
 struct Edge {
-    bool _allocated = false;
     size_t _src_vertex_i;
     size_t _dst_vertex_i;
 
