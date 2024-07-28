@@ -11,7 +11,7 @@ all: examples
 
 garaza:
 	git clone git@github.com:viktorsboroviks/garaza.git
-	cd garaza; git checkout v1.2
+	cd garaza; git checkout v1.3
 
 examples: \
 	examples_graph

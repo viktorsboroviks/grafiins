@@ -38,6 +38,13 @@ struct Edge {
         label(label)
     {
     }
+
+    // constructor w/o arguments is required to be able to
+    // resize garaza::Storage<Edge>
+    Edge() :
+        Edge(garaza::FIRST_AVAILABLE_I, garaza::FIRST_AVAILABLE_I)
+    {
+    }
 };
 
 template <typename TVertex, typename TEdge>
@@ -110,9 +117,14 @@ public:
         return in_vertices_i;
     }
 
+    size_t add_vertex_at(size_t i, TVertex v)
+    {
+        return _vertices.add_at(i, v);
+    }
+
     size_t add_vertex(TVertex v)
     {
-        return _vertices.add(v);
+        return add_vertex_at(garaza::FIRST_AVAILABLE_I, v);
     }
 
     void remove_vertex(size_t i)
@@ -130,7 +142,7 @@ public:
         _vertices.remove(i);
     }
 
-    size_t add_edge(TEdge e)
+    size_t add_edge_at(size_t i, TEdge e)
     {
         // check input
         assert(_vertices.contains_i(e._src_vertex_i));
@@ -145,13 +157,18 @@ public:
         }
 
         // add edge
-        size_t i = _edges.add(e);
+        const size_t ret_i = _edges.add_at(i, e);
 
         // update connected vertices
-        _vertices.at(e._src_vertex_i)->_out_edges_i.insert(i);
-        _vertices.at(e._dst_vertex_i)->_in_edges_i.insert(i);
+        _vertices.at(e._src_vertex_i)->_out_edges_i.insert(ret_i);
+        _vertices.at(e._dst_vertex_i)->_in_edges_i.insert(ret_i);
 
-        return i;
+        return ret_i;
+    }
+
+    size_t add_edge(TEdge e)
+    {
+        return add_edge_at(garaza::FIRST_AVAILABLE_I, e);
     }
 
     void remove_edge(size_t i)
