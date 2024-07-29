@@ -42,7 +42,7 @@ struct Edge {
     // constructor w/o arguments is required to be able to
     // resize garaza::Storage<Edge>
     Edge() :
-        Edge(garaza::FIRST_AVAILABLE_I, garaza::FIRST_AVAILABLE_I)
+        Edge(garaza::I_FIRST_AVAILABLE, garaza::I_FIRST_AVAILABLE)
     {
     }
 };
@@ -117,13 +117,17 @@ public:
         return in_vertices_i;
     }
 
-    size_t add_vertex(TVertex v, size_t i = garaza::FIRST_AVAILABLE_I)
+    size_t add_vertex(TVertex v, size_t i = garaza::I_FIRST_AVAILABLE)
     {
         return _vertices.add(v, i);
     }
 
     void remove_vertex(size_t i)
     {
+        if (i == garaza::I_RANDOM) {
+            i = _vertices.rnd_i();
+        }
+
         assert(_vertices.contains_i(i));
 
         // remove connected edges
@@ -137,7 +141,7 @@ public:
         _vertices.remove(i);
     }
 
-    size_t add_edge(TEdge e, size_t i = garaza::FIRST_AVAILABLE_I)
+    size_t add_edge(TEdge e, size_t i = garaza::I_FIRST_AVAILABLE)
     {
         // check input
         assert(_vertices.contains_i(e._src_vertex_i));
@@ -163,6 +167,10 @@ public:
 
     void remove_edge(size_t i)
     {
+        if (i == garaza::I_RANDOM) {
+            i = _edges.rnd_i();
+        }
+
         assert(_edges.contains_i(i));
 
         // disconnect vertices

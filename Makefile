@@ -11,7 +11,11 @@ all: examples
 
 garaza:
 	git clone git@github.com:viktorsboroviks/garaza.git
-	cd garaza; git checkout v1.4
+	cd garaza; git checkout v2.0
+
+rododendrs:
+	git clone git@github.com:viktorsboroviks/rododendrs.git
+	cd rododendrs; git checkout v1.1
 
 examples: \
 	examples_graph
@@ -20,11 +24,12 @@ examples_graph: graph.o examples/graph_config.json
 	./graph.o
 	python3 scripts/plot_graph.py examples/graph_config.json
 
-graph.o: garaza examples/graph.cpp
+graph.o: garaza rododendrs examples/graph.cpp
 	g++ -Wall -Wextra -Werror -Wpedantic \
 		-std=c++20 -O3 \
 		-I./include \
 		-I./garaza/include \
+		-I./rododendrs/include \
 		examples/graph.cpp -o $@
 
 format: clang-format black
@@ -44,3 +49,4 @@ clean:
 
 distclean: clean
 	rm -rf garaza
+	rm -rf rododendrs
