@@ -76,6 +76,11 @@ public:
         return _vertices.all_i();
     }
 
+    size_t rnd_vertex_i()
+    {
+        return _vertices.rnd_i();
+    }
+
     TVertex* vertex_at(size_t i)
     {
         return _vertices.at(i);
@@ -84,6 +89,11 @@ public:
     const std::vector<size_t> all_edges_i()
     {
         return _edges.all_i();
+    }
+
+    size_t rnd_edge_i()
+    {
+        return _edges.rnd_i();
     }
 
     TEdge* edge_at(size_t i)
