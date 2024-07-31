@@ -42,7 +42,7 @@ struct Edge {
     // constructor w/o arguments is required to be able to
     // resize garaza::Storage<Edge>
     Edge() :
-        Edge(garaza::I_FIRST_AVAILABLE, garaza::I_FIRST_AVAILABLE)
+        Edge(0, 0)
     {
     }
 };
@@ -175,7 +175,7 @@ public:
         return ret_i;
     }
 
-    void remove_edge(size_t i)
+    size_t remove_edge(size_t i)
     {
         if (i == garaza::I_RANDOM) {
             i = _edges.rnd_i();
@@ -194,6 +194,7 @@ public:
 
         // remove edge
         _edges.remove(i);
+        return i;
     }
 
     void to_csv(std::string vertex_filepath, std::string edge_filepath)
@@ -318,9 +319,9 @@ public:
 template <typename TVertex, typename TEdge>
 class DAG : public Graph<TVertex, TEdge> {
 public:
-    size_t add_edge(TEdge e)
+    size_t add_edge(TEdge e, size_t i = garaza::I_FIRST_AVAILABLE)
     {
-        const size_t edge_i = Graph<TVertex, TEdge>::add_edge(e);
+        const size_t edge_i = Graph<TVertex, TEdge>::add_edge(e, i);
 
         const TEdge* edge = this->edge_at(edge_i);
         assert(edge != nullptr);
