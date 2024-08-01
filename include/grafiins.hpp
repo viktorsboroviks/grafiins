@@ -27,8 +27,8 @@ struct Vertex {
 };
 
 struct Edge {
-    size_t _src_vertex_i;
-    size_t _dst_vertex_i;
+    std::optional<size_t> _src_vertex_i;
+    std::optional<size_t> _dst_vertex_i;
 
     std::string label;
 
@@ -41,8 +41,7 @@ struct Edge {
 
     // constructor w/o arguments is required to be able to
     // resize garaza::Storage<Edge>
-    Edge() :
-        Edge(0, 0)
+    Edge()
     {
     }
 };
@@ -76,6 +75,16 @@ public:
         return _vertices.all_i();
     }
 
+    const std::list<TVertex> all_vertices()
+    {
+        return _vertices.list();
+    }
+
+    bool contains_vertex_i(size_t i)
+    {
+        return _vertices.contains_i(i);
+    }
+
     size_t rnd_vertex_i()
     {
         return _vertices.rnd_i();
@@ -89,6 +98,16 @@ public:
     const std::vector<size_t> all_edges_i()
     {
         return _edges.all_i();
+    }
+
+    const std::list<TEdge> all_edges()
+    {
+        return _edges.list();
+    }
+
+    bool contains_edge_i(size_t i)
+    {
+        return _edges.contains_i(i);
     }
 
     size_t rnd_edge_i()
@@ -107,8 +126,11 @@ public:
         assert(v != nullptr);
 
         std::vector<size_t> out_vertices_i;
-        for (auto& oe_i : v->_out_edges_i) {
-            out_vertices_i.push_back(edge_at(oe_i)->_dst_vertex_i);
+        for (auto& oei : v->_out_edges_i) {
+            const TEdge* e = edge_at(oei);
+            assert(e != nullptr);
+            assert(e->_dst_vertex_i.has_value());
+            out_vertices_i.push_back(e->_dst_vertex_i.value());
         }
 
         return out_vertices_i;
@@ -120,8 +142,11 @@ public:
         assert(v != nullptr);
 
         std::vector<size_t> in_vertices_i;
-        for (auto& oe_i : v->_in_edges_i) {
-            in_vertices_i.push_back(edge_at(oe_i)->src_vertex_i);
+        for (auto& iei : v->_in_edges_i) {
+            const TEdge* e = edge_at(iei);
+            assert(e != nullptr);
+            assert(e->_src_vertex_i.has_value());
+            in_vertices_i.push_back(e->_src_vertex_i.value());
         }
 
         return in_vertices_i;
@@ -129,7 +154,8 @@ public:
 
     size_t add_vertex(TVertex v)
     {
-        return _vertices.add(v);
+        const size_t i = _vertices.add(v);
+        return i;
     }
 
     void remove_vertex(size_t i)
@@ -137,26 +163,35 @@ public:
         assert(_vertices.contains_i(i));
 
         // remove connected edges
-        for (size_t ei : _vertices.at(i)->_in_edges_i) {
-            remove_edge(ei);
+        const TVertex* v = _vertices.at(i);
+        assert(v != nullptr);
+        const std::set<size_t> in_ei = v->_in_edges_i;
+        const std::set<size_t> out_ei = v->_out_edges_i;
+        for (size_t iei : in_ei) {
+            assert(!out_ei.contains(iei));
+            remove_edge(iei);
         }
-        for (size_t ei : _vertices.at(i)->_out_edges_i) {
-            remove_edge(ei);
+        for (size_t oei : out_ei) {
+            assert(!in_ei.contains(oei));
+            remove_edge(oei);
         }
 
         _vertices.remove(i);
     }
 
-    size_t add_edge(TEdge e)
+    std::optional<size_t> add_edge(TEdge e)
     {
         // check input
-        assert(_vertices.contains_i(e._src_vertex_i));
-        assert(_vertices.contains_i(e._dst_vertex_i));
+        assert(e._src_vertex_i.has_value());
+        assert(e._dst_vertex_i.has_value());
+        assert(_vertices.contains_i(e._src_vertex_i.value()));
+        assert(_vertices.contains_i(e._dst_vertex_i.value()));
 
         if (!allow_parallel_edges) {
-            for (size_t vi : out_vertices_i(e._src_vertex_i)) {
-                if (vi == e._dst_vertex_i) {
-                    throw std::logic_error("parallel edges not allowed.");
+            for (size_t vi : out_vertices_i(e._src_vertex_i.value())) {
+                if (vi == e._dst_vertex_i.value()) {
+                    // parallel edges not allowed
+                    return {};
                 }
             }
         }
@@ -165,8 +200,8 @@ public:
         const size_t i = _edges.add(e);
 
         // update connected vertices
-        _vertices.at(e._src_vertex_i)->_out_edges_i.insert(i);
-        _vertices.at(e._dst_vertex_i)->_in_edges_i.insert(i);
+        _vertices.at(e._src_vertex_i.value())->_out_edges_i.insert(i);
+        _vertices.at(e._dst_vertex_i.value())->_in_edges_i.insert(i);
 
         return i;
     }
@@ -176,11 +211,14 @@ public:
         assert(_edges.contains_i(i));
 
         // disconnect vertices
-        const size_t src_i = _edges.at(i)->_src_vertex_i;
+        const TEdge* e = _edges.at(i);
+        assert(e->_src_vertex_i.has_value());
+        const size_t src_i = e->_src_vertex_i.value();
         assert(_vertices.contains_i(src_i));
         _vertices.at(src_i)->_out_edges_i.erase(i);
 
-        const size_t dst_i = _edges.at(i)->_dst_vertex_i;
+        assert(e->_dst_vertex_i.has_value());
+        const size_t dst_i = e->_dst_vertex_i.value();
         assert(_vertices.contains_i(dst_i));
         _vertices.at(dst_i)->_in_edges_i.erase(i);
 
@@ -211,10 +249,14 @@ public:
         fe.is_open();
         fe << "edge_i,src_vertex_i,dst_vertex_i,label" << std::endl;
         for (size_t i : _edges.all_i()) {
+            const TEdge* e = _edges.at(i);
+            assert(e != nullptr);
+            assert(e->_src_vertex_i.has_value());
+            assert(e->_dst_vertex_i.has_value());
             fe << i << ",";
-            fe << _edges.at(i)->_src_vertex_i << ",";
-            fe << _edges.at(i)->_dst_vertex_i << ",";
-            fe << _edges.at(i)->label << std::endl;
+            fe << e->_src_vertex_i.value() << ",";
+            fe << e->_dst_vertex_i.value() << ",";
+            fe << e->label << std::endl;
         }
         fe.close();
     }
@@ -313,11 +355,17 @@ class DAG : public Graph<TVertex, TEdge> {
 public:
     std::optional<size_t> add_edge(TEdge e)
     {
-        const size_t edge_i = Graph<TVertex, TEdge>::add_edge(e);
+        assert(e._src_vertex_i.value() != e._dst_vertex_i.value());
+        const std::optional<size_t> opt = Graph<TVertex, TEdge>::add_edge(e);
+        if (!opt.has_value()) {
+            return {};
+        }
+        const size_t edge_i = opt.value();
 
         const TEdge* edge = this->edge_at(edge_i);
         assert(edge != nullptr);
-        const size_t vertex_i = edge->_src_vertex_i;
+        assert(edge->_src_vertex_i.has_value());
+        const size_t vertex_i = edge->_src_vertex_i.value();
         std::set<size_t> visited_i;
         std::set<size_t> searched_i;
 
