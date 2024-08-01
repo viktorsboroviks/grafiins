@@ -1,8 +1,8 @@
 #include <cassert>
 #include <fstream>
+#include <optional>
 #include <queue>
 #include <set>
-#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -127,17 +127,13 @@ public:
         return in_vertices_i;
     }
 
-    size_t add_vertex(TVertex v, size_t i = garaza::I_FIRST_AVAILABLE)
+    size_t add_vertex(TVertex v)
     {
-        return _vertices.add(v, i);
+        return _vertices.add(v);
     }
 
     void remove_vertex(size_t i)
     {
-        if (i == garaza::I_RANDOM) {
-            i = _vertices.rnd_i();
-        }
-
         assert(_vertices.contains_i(i));
 
         // remove connected edges
@@ -151,7 +147,7 @@ public:
         _vertices.remove(i);
     }
 
-    size_t add_edge(TEdge e, size_t i = garaza::I_FIRST_AVAILABLE)
+    size_t add_edge(TEdge e)
     {
         // check input
         assert(_vertices.contains_i(e._src_vertex_i));
@@ -160,27 +156,23 @@ public:
         if (!allow_parallel_edges) {
             for (size_t vi : out_vertices_i(e._src_vertex_i)) {
                 if (vi == e._dst_vertex_i) {
-                    throw std::logic_error("Parallel edges not allowed.");
+                    throw std::logic_error("parallel edges not allowed.");
                 }
             }
         }
 
         // add edge
-        const size_t ret_i = _edges.add(e, i);
+        const size_t i = _edges.add(e);
 
         // update connected vertices
-        _vertices.at(e._src_vertex_i)->_out_edges_i.insert(ret_i);
-        _vertices.at(e._dst_vertex_i)->_in_edges_i.insert(ret_i);
+        _vertices.at(e._src_vertex_i)->_out_edges_i.insert(i);
+        _vertices.at(e._dst_vertex_i)->_in_edges_i.insert(i);
 
-        return ret_i;
+        return i;
     }
 
     size_t remove_edge(size_t i)
     {
-        if (i == garaza::I_RANDOM) {
-            i = _edges.rnd_i();
-        }
-
         assert(_edges.contains_i(i));
 
         // disconnect vertices
@@ -319,9 +311,9 @@ public:
 template <typename TVertex, typename TEdge>
 class DAG : public Graph<TVertex, TEdge> {
 public:
-    size_t add_edge(TEdge e, size_t i = garaza::I_FIRST_AVAILABLE)
+    std::optional<size_t> add_edge(TEdge e)
     {
-        const size_t edge_i = Graph<TVertex, TEdge>::add_edge(e, i);
+        const size_t edge_i = Graph<TVertex, TEdge>::add_edge(e);
 
         const TEdge* edge = this->edge_at(edge_i);
         assert(edge != nullptr);
@@ -334,7 +326,7 @@ public:
         }
 
         this->remove_edge(edge_i);
-        throw std::logic_error("Adding edge creates cycle in DAG.");
+        return {};
     }
 };
 

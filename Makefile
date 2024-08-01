@@ -11,7 +11,7 @@ all: examples
 
 garaza:
 	git clone git@github.com:viktorsboroviks/garaza.git
-	cd garaza; git checkout v2.0
+	cd garaza; git checkout v3.0
 
 rododendrs:
 	git clone git@github.com:viktorsboroviks/rododendrs.git
