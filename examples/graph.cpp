@@ -109,11 +109,7 @@ int main()
     assert(dag.all_edges_i().size() == 2);
     assert(!dag.is_cyclic());
 
-    try {
-        dag.add_edge(grafiins::Edge(2, 0, "cyclic edge!"));
-    }
-    catch (const std::logic_error& e) {
-    };
+    assert(!dag.add_edge(grafiins::Edge(2, 0, "cyclic edge!")).has_value());
 
     assert(!dag.is_cyclic());
     assert(dag.n_edges() == 2);
