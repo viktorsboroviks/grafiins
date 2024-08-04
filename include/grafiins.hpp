@@ -1,5 +1,6 @@
 #include <cassert>
 #include <fstream>
+#include <map>
 #include <optional>
 #include <queue>
 #include <set>
@@ -24,6 +25,17 @@ struct Vertex {
         label(in_label)
     {
     }
+
+    std::map<std::string, std::string> serialize()
+    {
+        std::map<std::string, std::string> m;
+        m["label"] = label;
+        m["graphviz_shape"] = graphviz_shape;
+        m["graphviz_cluster"] = graphviz_cluster;
+        m["graphviz_width"] = std::to_string(graphviz_width);
+        m["graphviz_height"] = std::to_string(graphviz_height);
+        return m;
+    }
 };
 
 struct Edge {
@@ -41,8 +53,31 @@ struct Edge {
 
     // constructor w/o arguments is required to be able to
     // resize garaza::Storage<Edge>
-    Edge()
+    Edge(std::string label = "") :
+        label(label)
     {
+    }
+
+    std::map<std::string, std::string> serialize()
+    {
+        std::map<std::string, std::string> m;
+        m["label"] = label;
+
+        if (_src_vertex_i.has_value()) {
+            m["src_vertex_i"] = std::to_string(_src_vertex_i.value());
+        }
+        else {
+            m["src_vertex_i"] = "unassigned";
+        }
+
+        if (_dst_vertex_i.has_value()) {
+            m["dst_vertex_i"] = std::to_string(_dst_vertex_i.value());
+        }
+        else {
+            m["dst_vertex_i"] = "unassigned";
+        }
+
+        return m;
     }
 };
 
@@ -229,34 +264,62 @@ public:
 
     void to_csv(std::string vertex_filepath, std::string edge_filepath)
     {
+        // vertices
         std::ofstream fv(vertex_filepath);
         fv.is_open();
-        fv << "vertex_i,label,";
-        fv << "graphviz_shape,graphviz_cluster,";
-        fv << "graphviz_width,graphviz_height";
+
+        // generate title row
+        fv << "vertex_i";
+        std::map<std::string, std::string> mvh = TVertex().serialize();
+        for (std::map<std::string, std::string>::iterator it = mvh.begin();
+             it != mvh.end();
+             it++) {
+            fv << ",";
+            fv << it->first;
+        }
         fv << std::endl;
+
+        // generate content
         for (size_t i : _vertices.all_i()) {
-            fv << i << ",";
-            fv << _vertices.at(i)->label << ",";
-            fv << _vertices.at(i)->graphviz_shape << ",";
-            fv << _vertices.at(i)->graphviz_cluster << ",";
-            fv << _vertices.at(i)->graphviz_width << ",";
-            fv << _vertices.at(i)->graphviz_height << std::endl;
+            fv << i;
+            std::map<std::string, std::string> mv =
+                    _vertices.at(i)->serialize();
+            for (std::map<std::string, std::string>::iterator it = mv.begin();
+                 it != mv.end();
+                 it++) {
+                fv << ",";
+                fv << it->second;
+            }
+            fv << std::endl;
         }
         fv.close();
 
+        // edges
         std::ofstream fe(edge_filepath);
         fe.is_open();
-        fe << "edge_i,src_vertex_i,dst_vertex_i,label" << std::endl;
+
+        // generate title row
+        fe << "edge_i";
+        std::map<std::string, std::string> meh = TEdge().serialize();
+        for (std::map<std::string, std::string>::iterator it = meh.begin();
+             it != meh.end();
+             it++) {
+            fe << ",";
+            fe << it->first;
+        }
+        fe << std::endl;
+
+        // generate content
         for (size_t i : _edges.all_i()) {
-            const TEdge* e = _edges.at(i);
-            assert(e != nullptr);
-            assert(e->_src_vertex_i.has_value());
-            assert(e->_dst_vertex_i.has_value());
-            fe << i << ",";
-            fe << e->_src_vertex_i.value() << ",";
-            fe << e->_dst_vertex_i.value() << ",";
-            fe << e->label << std::endl;
+            fe << i;
+            std::map<std::string, std::string> me = _edges.at(i)->serialize();
+            for (std::map<std::string, std::string>::iterator it = me.begin();
+                 it != me.end();
+                 it++) {
+                fe << ",";
+                fe << it->second;
+            }
+            fe << std::endl;
         }
         fe.close();
     }
