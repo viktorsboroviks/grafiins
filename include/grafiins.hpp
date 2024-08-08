@@ -262,7 +262,8 @@ public:
         return i;
     }
 
-    void to_csv(std::string vertex_filepath, std::string edge_filepath)
+    void to_csv(const std::string& vertex_filepath,
+                const std::string& edge_filepath)
     {
         // vertices
         std::ofstream fv(vertex_filepath);

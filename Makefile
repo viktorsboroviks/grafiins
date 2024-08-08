@@ -22,7 +22,11 @@ examples: \
 
 examples_graph: graph.o examples/graph_config.json
 	./graph.o
-	python3 scripts/plot_graph.py examples/graph_config.json
+	python3 scripts/plot_graph.py \
+		examples/graph_config.json \
+		vertices.csv \
+		edges.csv \
+		graph.svg
 
 graph.o: garaza rododendrs examples/graph.cpp
 	g++ -Wall -Wextra -Werror -Wpedantic \

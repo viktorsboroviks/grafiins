@@ -13,6 +13,9 @@ CONFIG_SCHEMA_PATH = os.path.join(
 
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("config", help="path to a .json config file")
+parser.add_argument("vertices", help="path to a .csv vertices file")
+parser.add_argument("edges", help="path to a .csv edges file")
+parser.add_argument("output", help="path to a .svg output file")
 args = parser.parse_args()
 
 with open(CONFIG_SCHEMA_PATH) as f:
@@ -22,9 +25,9 @@ with open(args.config) as f:
 
 jsonschema.validate(instance=args.config, schema=config_schema)
 
-vertices_table = pd.read_csv(config_json["vertices_csv_path"]).replace(np.nan, "")
-edges_table = pd.read_csv(config_json["edges_csv_path"]).replace(np.nan, "")
-output_svg_path = config_json["output_svg_path"]
+vertices_table = pd.read_csv(args.vertices).replace(np.nan, "")
+edges_table = pd.read_csv(args.edges).replace(np.nan, "")
+output_svg_path = args.output
 
 graphviz_ordering = None
 if "ordering" in config_json["graphviz"]:
