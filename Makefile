@@ -23,10 +23,10 @@ examples: \
 examples_graph: graph.o examples/graph_config.json
 	./graph.o
 	python3 scripts/plot_graph.py \
-		examples/graph_config.json \
-		vertices.csv \
-		edges.csv \
-		graph.svg
+		--config=examples/graph_config.json \
+		--vertices=vertices.csv \
+		--edges=edges.csv \
+		--output=graph.svg
 
 graph.o: garaza rododendrs examples/graph.cpp
 	g++ -Wall -Wextra -Werror -Wpedantic \

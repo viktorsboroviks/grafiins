@@ -1,8 +1,5 @@
 {
     "plot_graph": {
-        "vertices_csv_path": "vertices.csv",
-        "edges_csv_path": "edges.csv",
-        "output_svg_path": "graph.svg",
         "graphviz": {
             "ordering": "in",
             "rankdir": "LR"
