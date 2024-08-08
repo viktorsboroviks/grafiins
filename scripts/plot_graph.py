@@ -15,9 +15,12 @@ DEFAULT_CONFIG_SECTION = "plot_graph"
 
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("--config", help="path to a .json config file")
-parser.add_argument("--config-section", help="name of the config section",
-                    default=DEFAULT_CONFIG_SECTION,
-                    required=False)
+parser.add_argument(
+    "--config-section",
+    help="name of the config section",
+    default=DEFAULT_CONFIG_SECTION,
+    required=False,
+)
 parser.add_argument("--vertices", help="path to a .csv vertices file")
 parser.add_argument("--edges", help="path to a .csv edges file")
 parser.add_argument("--output", help="path to a .svg output file")

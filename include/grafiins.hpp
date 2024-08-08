@@ -241,6 +241,11 @@ public:
         return i;
     }
 
+    bool vertex_is_dangling(size_t i)
+    {
+        return in_vertices_i(i).empty() || out_vertices_i(i).empty();
+    }
+
     size_t remove_edge(size_t i)
     {
         assert(_edges.contains_i(i));
