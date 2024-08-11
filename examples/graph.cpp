@@ -40,8 +40,10 @@ int main()
     assert(g.n_edges() == 1);
     assert(g.all_edges_i().size() == 1);
 
-    assert(g.add_vertex(grafiins::Vertex("v4")) == 4);
-    assert(g.add_vertex(grafiins::Vertex("v5")) == 5);
+    assert(g.add_vertex(grafiins::Vertex("v4", "in0(v4)\\lb=5.2e-15.33")) ==
+           4);
+    assert(g.add_vertex(grafiins::Vertex("v5", "in1(v5)\\lb=3.2e+78.12341")) ==
+           5);
     assert(g.add_vertex(grafiins::Vertex("v6")) == 6);
     assert(g.add_vertex(grafiins::Vertex("v7")) == 7);
     assert(g.add_vertex(grafiins::Vertex("v8")) == 8);
@@ -52,7 +54,7 @@ int main()
     assert(g.add_vertex(grafiins::Vertex("v13")) == 13);
     assert(g.n_vertices() == 14);
 
-    assert(g.add_edge(grafiins::Edge(3, 4, "e0")) == 0);
+    assert(g.add_edge(grafiins::Edge(3, 4, "e0\\lw=34.23")) == 0);
     assert(g.add_edge(grafiins::Edge(1, 2, "e1")) == 1);
     assert(g.add_edge(grafiins::Edge(5, 0, "e3")) == 3);
     assert(g.add_edge(grafiins::Edge(6, 3, "e4")) == 4);

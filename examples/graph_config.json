@@ -2,7 +2,10 @@
     "plot_graph": {
         "graphviz": {
             "ordering": "in",
-            "rankdir": "LR"
+            "rankdir": "LR",
+            "fontsize": "10pt",
+            "fontname": "Monospace",
+            "labelloc": "c"
         }
     }
 }

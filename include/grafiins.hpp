@@ -15,21 +15,24 @@ struct Vertex {
     std::set<size_t> _in_edges_i;
     std::set<size_t> _out_edges_i;
 
-    std::string label;
+    std::string graphviz_label;
+    std::string graphviz_xlabel;
     std::string graphviz_shape = "circle";
     std::string graphviz_cluster = "";
     double graphviz_width = 0;
     double graphviz_height = 0;
 
-    Vertex(std::string in_label = "") :
-        label(in_label)
+    Vertex(std::string graphviz_label = "", std::string graphviz_xlabel = "") :
+        graphviz_label(graphviz_label),
+        graphviz_xlabel(graphviz_xlabel)
     {
     }
 
     std::map<std::string, std::string> serialize()
     {
         std::map<std::string, std::string> m;
-        m["label"] = label;
+        m["graphviz_label"] = graphviz_label;
+        m["graphviz_xlabel"] = graphviz_xlabel;
         m["graphviz_shape"] = graphviz_shape;
         m["graphviz_cluster"] = graphviz_cluster;
         m["graphviz_width"] = std::to_string(graphviz_width);
@@ -42,26 +45,33 @@ struct Edge {
     std::optional<size_t> _src_vertex_i;
     std::optional<size_t> _dst_vertex_i;
 
-    std::string label;
+    std::string graphviz_label;
+    std::string graphviz_xlabel;
 
-    Edge(size_t src_i, size_t dst_i, std::string label = "") :
+    Edge(size_t src_i,
+         size_t dst_i,
+         std::string graphviz_label = "",
+         std::string graphviz_xlabel = "") :
         _src_vertex_i(src_i),
         _dst_vertex_i(dst_i),
-        label(label)
+        graphviz_label(graphviz_label),
+        graphviz_xlabel(graphviz_xlabel)
     {
     }
 
     // constructor w/o arguments is required to be able to
     // resize garaza::Storage<Edge>
-    Edge(std::string label = "") :
-        label(label)
+    Edge(std::string graphviz_label = "", std::string graphviz_xlabel = "") :
+        graphviz_label(graphviz_label),
+        graphviz_xlabel(graphviz_xlabel)
     {
     }
 
     std::map<std::string, std::string> serialize()
     {
         std::map<std::string, std::string> m;
-        m["label"] = label;
+        m["graphviz_label"] = graphviz_label;
+        m["graphviz_xlabel"] = graphviz_xlabel;
 
         if (_src_vertex_i.has_value()) {
             m["src_vertex_i"] = std::to_string(_src_vertex_i.value());

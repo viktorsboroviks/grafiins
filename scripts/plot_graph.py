@@ -4,6 +4,7 @@ import os
 import jsonschema
 import numpy as np
 import pandas as pd
+import pathlib
 import pydot
 
 CONFIG_SCHEMA_PATH = os.path.join(
@@ -37,7 +38,7 @@ jsonschema.validate(instance=args.config, schema=config_schema)
 
 vertices_table = pd.read_csv(args.vertices).replace(np.nan, "")
 edges_table = pd.read_csv(args.edges).replace(np.nan, "")
-output_svg_path = args.output
+output_path = args.output
 
 graphviz_ordering = None
 if "ordering" in config_json["graphviz"]:
@@ -45,11 +46,24 @@ if "ordering" in config_json["graphviz"]:
 graphviz_rankdir = None
 if "rankdir" in config_json["graphviz"]:
     graphviz_rankdir = config_json["graphviz"]["rankdir"]
+graphviz_fontsize = None
+if "fontsize" in config_json["graphviz"]:
+    graphviz_fontsize = config_json["graphviz"]["fontsize"]
+graphviz_fontname = None
+if "fontname" in config_json["graphviz"]:
+    graphviz_fontname = config_json["graphviz"]["fontname"]
+graphviz_labelloc = None
+if "labelloc" in config_json["graphviz"]:
+    graphviz_labelloc = config_json["graphviz"]["labelloc"]
 
 g = pydot.Dot(
     graph_type="digraph",
+    forcelabels=True,
     rankdir=graphviz_rankdir,
     ordering=graphviz_ordering,
+    fontsize=graphviz_fontsize,
+    fontname=graphviz_fontname,
+    labelloc=graphviz_labelloc,
 )
 
 clusters = {}
@@ -74,11 +88,15 @@ for i in vertices_table.index:
     dst_graph.add_node(
         pydot.Node(
             str(vertices_table["vertex_i"].iloc[i]),
-            label=vertices_table["label"].iloc[i],
+            label=vertices_table["graphviz_label"].iloc[i],
+            xlabel=vertices_table["graphviz_xlabel"].iloc[i],
             shape=vertices_table["graphviz_shape"].iloc[i],
             fixedsize=graphviz_fixedsize,
             width=graphviz_width,
             height=graphviz_height,
+            fontsize=graphviz_fontsize,
+            fontname=graphviz_fontname,
+            labelloc=graphviz_labelloc,
         )
     )
 
@@ -87,8 +105,18 @@ for i in edges_table.index:
         pydot.Edge(
             str(edges_table["src_vertex_i"].iloc[i]),
             str(edges_table["dst_vertex_i"].iloc[i]),
-            label=edges_table["label"].iloc[i],
+            label=edges_table["graphviz_label"].iloc[i],
+            xlabel=edges_table["graphviz_xlabel"].iloc[i],
+            fontsize=graphviz_fontsize,
+            fontname=graphviz_fontname,
+            labelloc=graphviz_labelloc,
         )
     )
 
-g.write_svg(output_svg_path)
+extension = pathlib.Path(output_path).suffix
+if extension == ".svg":
+    g.write_svg(output_path)
+elif extension == ".png":
+    g.write_png(output_path)
+else:
+    raise RuntimeError(f"{extension} not supported.")
