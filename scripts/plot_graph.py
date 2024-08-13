@@ -91,6 +91,8 @@ for i in vertices_table.index:
             label=vertices_table["graphviz_label"].iloc[i],
             xlabel=vertices_table["graphviz_xlabel"].iloc[i],
             shape=vertices_table["graphviz_shape"].iloc[i],
+            style=vertices_table["graphviz_style"].iloc[i],
+            fillcolor=vertices_table["graphviz_fillcolor"].iloc[i],
             fixedsize=graphviz_fixedsize,
             width=graphviz_width,
             height=graphviz_height,

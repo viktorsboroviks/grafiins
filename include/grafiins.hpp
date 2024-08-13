@@ -18,6 +18,8 @@ struct Vertex {
     std::string graphviz_label;
     std::string graphviz_xlabel;
     std::string graphviz_shape = "circle";
+    std::string graphviz_style = "";
+    std::string graphviz_fillcolor = "";
     std::string graphviz_cluster = "";
     double graphviz_width = 0;
     double graphviz_height = 0;
@@ -34,6 +36,8 @@ struct Vertex {
         m["graphviz_label"] = graphviz_label;
         m["graphviz_xlabel"] = graphviz_xlabel;
         m["graphviz_shape"] = graphviz_shape;
+        m["graphviz_style"] = graphviz_style;
+        m["graphviz_fillcolor"] = graphviz_fillcolor;
         m["graphviz_cluster"] = graphviz_cluster;
         m["graphviz_width"] = std::to_string(graphviz_width);
         m["graphviz_height"] = std::to_string(graphviz_height);
