@@ -25,6 +25,9 @@ parser.add_argument(
 parser.add_argument("--vertices", help="path to a .csv vertices file")
 parser.add_argument("--edges", help="path to a .csv edges file")
 parser.add_argument("--output", help="path to a .svg output file")
+parser.add_argument(
+    "--simplified", help="produce a simplified graph", action="store_true"
+)
 args = parser.parse_args()
 
 with open(CONFIG_SCHEMA_PATH) as f:
@@ -85,35 +88,57 @@ for i in vertices_table.index:
     # this property is required to enable width and/or height settings
     graphviz_fixedsize = bool(graphviz_width) or bool(graphviz_height)
 
-    dst_graph.add_node(
-        pydot.Node(
-            str(vertices_table["vertex_i"].iloc[i]),
-            label=vertices_table["graphviz_label"].iloc[i],
-            xlabel=vertices_table["graphviz_xlabel"].iloc[i],
-            shape=vertices_table["graphviz_shape"].iloc[i],
-            style=vertices_table["graphviz_style"].iloc[i],
-            fillcolor=vertices_table["graphviz_fillcolor"].iloc[i],
-            fixedsize=graphviz_fixedsize,
-            width=graphviz_width,
-            height=graphviz_height,
-            fontsize=graphviz_fontsize,
-            fontname=graphviz_fontname,
-            labelloc=graphviz_labelloc,
+    if args.simplified:
+        dst_graph.add_node(
+            pydot.Node(
+                str(vertices_table["vertex_i"].iloc[i]),
+                shape=vertices_table["graphviz_shape"].iloc[i],
+                style="filled",
+                fillcolor="black",
+                fixedsize=graphviz_fixedsize,
+                width=graphviz_width,
+                height=graphviz_height,
+            )
         )
-    )
+    else:
+        dst_graph.add_node(
+            pydot.Node(
+                str(vertices_table["vertex_i"].iloc[i]),
+                label=vertices_table["graphviz_label"].iloc[i],
+                xlabel=vertices_table["graphviz_xlabel"].iloc[i],
+                shape=vertices_table["graphviz_shape"].iloc[i],
+                style=vertices_table["graphviz_style"].iloc[i],
+                fillcolor=vertices_table["graphviz_fillcolor"].iloc[i],
+                fixedsize=graphviz_fixedsize,
+                width=graphviz_width,
+                height=graphviz_height,
+                fontsize=graphviz_fontsize,
+                fontname=graphviz_fontname,
+                labelloc=graphviz_labelloc,
+            )
+        )
 
 for i in edges_table.index:
-    g.add_edge(
-        pydot.Edge(
-            str(edges_table["src_vertex_i"].iloc[i]),
-            str(edges_table["dst_vertex_i"].iloc[i]),
-            label=edges_table["graphviz_label"].iloc[i],
-            xlabel=edges_table["graphviz_xlabel"].iloc[i],
-            fontsize=graphviz_fontsize,
-            fontname=graphviz_fontname,
-            labelloc=graphviz_labelloc,
+    if args.simplified:
+        g.add_edge(
+            pydot.Edge(
+                str(edges_table["src_vertex_i"].iloc[i]),
+                str(edges_table["dst_vertex_i"].iloc[i]),
+                labelloc=graphviz_labelloc,
+            )
         )
-    )
+    else:
+        g.add_edge(
+            pydot.Edge(
+                str(edges_table["src_vertex_i"].iloc[i]),
+                str(edges_table["dst_vertex_i"].iloc[i]),
+                label=edges_table["graphviz_label"].iloc[i],
+                xlabel=edges_table["graphviz_xlabel"].iloc[i],
+                fontsize=graphviz_fontsize,
+                fontname=graphviz_fontname,
+                labelloc=graphviz_labelloc,
+            )
+        )
 
 extension = pathlib.Path(output_path).suffix
 if extension == ".svg":
