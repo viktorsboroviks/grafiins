@@ -4,9 +4,6 @@
         "graphviz": {
             "type": "object",
             "properties": {
-                "oredering": {
-                    "enum": ["in", "out"]
-                },
                 "rankdir": {
                     "enum": ["LR", "RL", "TB", "BT"]
                 }

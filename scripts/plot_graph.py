@@ -43,9 +43,6 @@ vertices_table = pd.read_csv(args.vertices).replace(np.nan, "")
 edges_table = pd.read_csv(args.edges).replace(np.nan, "")
 output_path = args.output
 
-graphviz_ordering = None
-if "ordering" in config_json["graphviz"]:
-    graphviz_ordering = config_json["graphviz"]["ordering"]
 graphviz_rankdir = None
 if "rankdir" in config_json["graphviz"]:
     graphviz_rankdir = config_json["graphviz"]["rankdir"]
@@ -63,7 +60,6 @@ g = pydot.Dot(
     graph_type="digraph",
     forcelabels=True,
     rankdir=graphviz_rankdir,
-    ordering=graphviz_ordering,
     fontsize=graphviz_fontsize,
     fontname=graphviz_fontname,
     labelloc=graphviz_labelloc,
@@ -74,10 +70,13 @@ for i in vertices_table.index:
     # all nodes without graphviz_cluster are grouped under
     # a cluster with empty string name
     graphviz_cluster = vertices_table["graphviz_cluster"].iloc[i]
+    cluster_label = graphviz_cluster
+    if args.simplified:
+        cluster_label = ""
     if graphviz_cluster not in clusters:
         clusters[graphviz_cluster] = pydot.Subgraph(
             f"cluster_{graphviz_cluster}",
-            label=graphviz_cluster,
+            label=cluster_label,
             peripheries=0,
         )
         g.add_subgraph(clusters[graphviz_cluster])

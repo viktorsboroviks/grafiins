@@ -1,7 +1,6 @@
 {
     "plot_graph": {
         "graphviz": {
-            "ordering": "in",
             "rankdir": "LR",
             "fontsize": "10pt",
             "fontname": "Monospace",
