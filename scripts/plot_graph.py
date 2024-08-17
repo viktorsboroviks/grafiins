@@ -47,18 +47,24 @@ vertices_table = pd.read_csv(args.vertices).replace(np.nan, "")
 edges_table = pd.read_csv(args.edges).replace(np.nan, "")
 output_path = args.output
 
-graphviz_rankdir = None
-if "rankdir" in config_json["graphviz"]:
-    graphviz_rankdir = config_json["graphviz"]["rankdir"]
-graphviz_fontsize = None
-if "fontsize" in config_json["graphviz"]:
-    graphviz_fontsize = config_json["graphviz"]["fontsize"]
-graphviz_fontname = None
-if "fontname" in config_json["graphviz"]:
-    graphviz_fontname = config_json["graphviz"]["fontname"]
-graphviz_labelloc = None
-if "labelloc" in config_json["graphviz"]:
-    graphviz_labelloc = config_json["graphviz"]["labelloc"]
+graphviz_rankdir = (
+    config_json["graphviz"]["rankdir"] if "rankdir" in config_json["graphviz"] else None
+)
+graphviz_fontsize = (
+    config_json["graphviz"]["fontsize"]
+    if "fontsize" in config_json["graphviz"]
+    else None
+)
+graphviz_fontname = (
+    config_json["graphviz"]["fontname"]
+    if "fontname" in config_json["graphviz"]
+    else None
+)
+graphviz_labelloc = (
+    config_json["graphviz"]["labelloc"]
+    if "labelloc" in config_json["graphviz"]
+    else None
+)
 
 g = pydot.Dot(
     graph_type="digraph",
@@ -74,9 +80,7 @@ for i in vertices_table.index:
     # all nodes without graphviz_cluster are grouped under
     # a cluster with empty string name
     graphviz_cluster = vertices_table["graphviz_cluster"].iloc[i]
-    cluster_label = graphviz_cluster
-    if args.simplified:
-        cluster_label = ""
+    cluster_label = "" if args.simplified else graphviz_cluster
     if graphviz_cluster not in clusters:
         clusters[graphviz_cluster] = pydot.Subgraph(
             f"cluster_{graphviz_cluster}",
@@ -144,6 +148,7 @@ for i in edges_table.index:
         )
 
 extension = pathlib.Path(output_path).suffix
+# pylint: disable=no-member
 if extension == ".svg":
     g.write_svg(output_path)
 elif extension == ".png":
