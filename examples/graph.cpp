@@ -67,23 +67,23 @@ int main()
     assert(g.n_edges() == 11);
 
     for (size_t i : {1, 5, 6, 7}) {
-        g.vertex_at(i)->graphviz_shape = "doublecircle";
-        g.vertex_at(i)->graphviz_width = 0.4;
+        g.vertex_at(i)->graphviz_shape   = "doublecircle";
+        g.vertex_at(i)->graphviz_width   = 0.4;
         g.vertex_at(i)->graphviz_cluster = "inputs";
     }
 
     for (size_t i : {10, 12}) {
-        g.vertex_at(i)->graphviz_shape = "box";
-        g.vertex_at(i)->graphviz_style = "filled";
+        g.vertex_at(i)->graphviz_shape     = "box";
+        g.vertex_at(i)->graphviz_style     = "filled";
         g.vertex_at(i)->graphviz_fillcolor = "black";
-        g.vertex_at(i)->graphviz_width = 0.4;
-        g.vertex_at(i)->graphviz_height = 0.4;
-        g.vertex_at(i)->graphviz_cluster = "inputs";
+        g.vertex_at(i)->graphviz_width     = 0.4;
+        g.vertex_at(i)->graphviz_height    = 0.4;
+        g.vertex_at(i)->graphviz_cluster   = "inputs";
     }
 
     for (size_t i : {0, 4}) {
-        g.vertex_at(i)->graphviz_shape = "doublecircle";
-        g.vertex_at(i)->graphviz_width = 0.4;
+        g.vertex_at(i)->graphviz_shape   = "doublecircle";
+        g.vertex_at(i)->graphviz_width   = 0.4;
         g.vertex_at(i)->graphviz_cluster = "outputs";
     }
 

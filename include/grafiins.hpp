@@ -17,14 +17,15 @@ struct Vertex {
 
     std::string graphviz_label;
     std::string graphviz_xlabel;
-    std::string graphviz_shape = "circle";
-    std::string graphviz_style = "";
+    std::string graphviz_shape     = "circle";
+    std::string graphviz_style     = "";
     std::string graphviz_fillcolor = "";
-    std::string graphviz_cluster = "";
-    double graphviz_width = 0;
-    double graphviz_height = 0;
+    std::string graphviz_cluster   = "";
+    double graphviz_width          = 0;
+    double graphviz_height         = 0;
 
-    Vertex(std::string graphviz_label = "", std::string graphviz_xlabel = "") :
+    explicit Vertex(const std::string& graphviz_label  = "",
+                    const std::string& graphviz_xlabel = "") :
         graphviz_label(graphviz_label),
         graphviz_xlabel(graphviz_xlabel)
     {
@@ -33,14 +34,14 @@ struct Vertex {
     std::map<std::string, std::string> serialize()
     {
         std::map<std::string, std::string> m;
-        m["graphviz_label"] = graphviz_label;
-        m["graphviz_xlabel"] = graphviz_xlabel;
-        m["graphviz_shape"] = graphviz_shape;
-        m["graphviz_style"] = graphviz_style;
+        m["graphviz_label"]     = graphviz_label;
+        m["graphviz_xlabel"]    = graphviz_xlabel;
+        m["graphviz_shape"]     = graphviz_shape;
+        m["graphviz_style"]     = graphviz_style;
         m["graphviz_fillcolor"] = graphviz_fillcolor;
-        m["graphviz_cluster"] = graphviz_cluster;
-        m["graphviz_width"] = std::to_string(graphviz_width);
-        m["graphviz_height"] = std::to_string(graphviz_height);
+        m["graphviz_cluster"]   = graphviz_cluster;
+        m["graphviz_width"]     = std::to_string(graphviz_width);
+        m["graphviz_height"]    = std::to_string(graphviz_height);
         return m;
     }
 };
@@ -54,8 +55,8 @@ struct Edge {
 
     Edge(size_t src_i,
          size_t dst_i,
-         std::string graphviz_label = "",
-         std::string graphviz_xlabel = "") :
+         const std::string& graphviz_label  = "",
+         const std::string& graphviz_xlabel = "") :
         _src_vertex_i(src_i),
         _dst_vertex_i(dst_i),
         graphviz_label(graphviz_label),
@@ -65,7 +66,8 @@ struct Edge {
 
     // constructor w/o arguments is required to be able to
     // resize garaza::Storage<Edge>
-    Edge(std::string graphviz_label = "", std::string graphviz_xlabel = "") :
+    explicit Edge(const std::string& graphviz_label  = "",
+                  const std::string& graphviz_xlabel = "") :
         graphviz_label(graphviz_label),
         graphviz_xlabel(graphviz_xlabel)
     {
@@ -74,7 +76,7 @@ struct Edge {
     std::map<std::string, std::string> serialize()
     {
         std::map<std::string, std::string> m;
-        m["graphviz_label"] = graphviz_label;
+        m["graphviz_label"]  = graphviz_label;
         m["graphviz_xlabel"] = graphviz_xlabel;
 
         if (_src_vertex_i.has_value()) {
@@ -104,7 +106,7 @@ private:
 public:
     bool allow_parallel_edges = false;
 
-    Graph(bool allow_parallel_edges = false) :
+    explicit Graph(bool allow_parallel_edges = false) :
         allow_parallel_edges(allow_parallel_edges)
     {
     }
@@ -175,7 +177,7 @@ public:
         assert(v != nullptr);
 
         std::vector<size_t> out_vertices_i;
-        for (auto& oei : v->_out_edges_i) {
+        for (const auto& oei : v->_out_edges_i) {
             const TEdge* e = edge_at(oei);
             assert(e != nullptr);
             assert(e->_dst_vertex_i.has_value());
@@ -191,7 +193,7 @@ public:
         assert(v != nullptr);
 
         std::vector<size_t> in_vertices_i;
-        for (auto& iei : v->_in_edges_i) {
+        for (const auto& iei : v->_in_edges_i) {
             const TEdge* e = edge_at(iei);
             assert(e != nullptr);
             assert(e->_src_vertex_i.has_value());
@@ -214,7 +216,7 @@ public:
         // remove connected edges
         const TVertex* v = _vertices.at(i);
         assert(v != nullptr);
-        const std::set<size_t> in_ei = v->_in_edges_i;
+        const std::set<size_t> in_ei  = v->_in_edges_i;
         const std::set<size_t> out_ei = v->_out_edges_i;
         for (size_t iei : in_ei) {
             assert(!out_ei.contains(iei));
@@ -238,6 +240,7 @@ public:
 
         if (!allow_parallel_edges) {
             for (size_t vi : out_vertices_i(e._src_vertex_i.value())) {
+                // cppcheck-suppress useStlAlgorithm
                 if (vi == e._dst_vertex_i.value()) {
                     // parallel edges not allowed
                     return {};
@@ -286,14 +289,13 @@ public:
     {
         // vertices
         std::ofstream fv(vertex_filepath);
-        fv.is_open();
 
         // generate title row
         fv << "vertex_i";
         std::map<std::string, std::string> mvh = TVertex().serialize();
         for (std::map<std::string, std::string>::iterator it = mvh.begin();
              it != mvh.end();
-             it++) {
+             ++it) {
             fv << ",";
             fv << it->first;
         }
@@ -306,7 +308,7 @@ public:
                     _vertices.at(i)->serialize();
             for (std::map<std::string, std::string>::iterator it = mv.begin();
                  it != mv.end();
-                 it++) {
+                 ++it) {
                 fv << ",";
                 fv << it->second;
             }
@@ -316,14 +318,13 @@ public:
 
         // edges
         std::ofstream fe(edge_filepath);
-        fe.is_open();
 
         // generate title row
         fe << "edge_i";
         std::map<std::string, std::string> meh = TEdge().serialize();
         for (std::map<std::string, std::string>::iterator it = meh.begin();
              it != meh.end();
-             it++) {
+             ++it) {
             fe << ",";
             fe << it->first;
         }
@@ -335,7 +336,7 @@ public:
             std::map<std::string, std::string> me = _edges.at(i)->serialize();
             for (std::map<std::string, std::string>::iterator it = me.begin();
                  it != me.end();
-                 it++) {
+                 ++it) {
                 fe << ",";
                 fe << it->second;
             }
@@ -346,8 +347,8 @@ public:
 
     // return true if any from src vertices is connected to
     // any from the dst vertices
-    bool are_connected_any(const std::set<size_t> src_vertices_i,
-                           const std::set<size_t> dst_vertices_i)
+    bool are_connected_any(const std::set<size_t>& src_vertices_i,
+                           const std::set<size_t>& dst_vertices_i)
     {
         assert(src_vertices_i.size() > 0);
         assert(dst_vertices_i.size() > 0);
@@ -392,6 +393,7 @@ public:
         visited_i.insert(vertex_i);
 
         for (size_t out_vertex_i : out_vertices_i(vertex_i)) {
+            // cppcheck-suppress useStlAlgorithm
             if (dfs_cycle_found(out_vertex_i, visited_i, searched_i)) {
                 return true;
             }
@@ -436,6 +438,7 @@ public:
 template <typename TVertex, typename TEdge>
 class DAG : public Graph<TVertex, TEdge> {
 public:
+    // cppcheck-suppress duplInheritedMember
     std::optional<size_t> add_edge(TEdge e)
     {
         assert(e._src_vertex_i.value() != e._dst_vertex_i.value());

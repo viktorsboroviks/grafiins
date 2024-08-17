@@ -1,10 +1,12 @@
 .PHONY: \
 	all \
 	examples \
-	examples_graph \
+	examples-graph \
 	format \
 	clang-format \
 	black \
+	lint \
+	cppcheck \
 	clean
 
 all: examples
@@ -17,10 +19,9 @@ rododendrs:
 	git clone git@github.com:viktorsboroviks/rododendrs.git
 	cd rododendrs; git checkout v1.1
 
-examples: \
-	examples_graph
+examples: examples-graph
 
-examples_graph: graph.o examples/graph_config.json
+examples-graph: graph.o examples/graph_config.json
 	./graph.o
 	python3 scripts/plot_graph.py \
 		--config=examples/graph_config.json \
@@ -45,6 +46,28 @@ clang-format: \
 
 black: scripts/plot_graph.py
 	black $^
+
+lint: cppcheck
+
+cppcheck: include/grafiins.hpp
+	cppcheck \
+		--enable=warning,portability,performance \
+		--enable=style,information \
+		--enable=missingInclude \
+		--inconclusive \
+		--library=std,posix,gnu \
+		--platform=unix64 \
+		--language=c++ \
+		--std=c++20 \
+		--inline-suppr \
+		--check-level=exhaustive \
+		--suppress=missingIncludeSystem \
+		--suppress=checkersReport \
+		--checkers-report=cppcheck_report.txt \
+		-I./include \
+		-I./garaza/include \
+		-I./rododendrs/include \
+		$^
 
 clean:
 	rm -rf `find . -name "*.o"`
