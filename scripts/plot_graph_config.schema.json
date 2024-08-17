@@ -1,13 +1,18 @@
 {
-    "description": "config for plot_graph.py",
-    "properties": {
-        "graphviz": {
-            "type": "object",
-            "properties": {
-                "rankdir": {
-                    "enum": ["LR", "RL", "TB", "BT"]
-                }
-            }
+  "description": "config for plot_graph.py",
+  "properties": {
+    "graphviz": {
+      "type": "object",
+      "properties": {
+        "rankdir": {
+          "enum": [
+            "LR",
+            "RL",
+            "TB",
+            "BT"
+          ]
         }
+      }
     }
+  }
 }
