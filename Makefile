@@ -3,21 +3,24 @@
 	examples \
 	examples-graph \
 	format \
-	clang-format \
-	black \
+	format-cpp \
+	format-python \
+	format-json \
 	lint \
-	cppcheck \
-	clean
+	lint-cpp \
+	lint-python \
+	clean \
+	distclean
 
 all: examples
 
 garaza:
 	git clone git@github.com:viktorsboroviks/garaza.git
-	cd garaza; git checkout v3.0
+	cd garaza; git checkout v3.3
 
 rododendrs:
 	git clone git@github.com:viktorsboroviks/rododendrs.git
-	cd rododendrs; git checkout v1.1
+	cd rododendrs; git checkout v1.4
 
 examples: examples-graph
 
@@ -37,19 +40,25 @@ graph.o: garaza rododendrs examples/graph.cpp
 		-I./rododendrs/include \
 		examples/graph.cpp -o $@
 
-format: clang-format black
+format: format-cpp format-python format-json
 
-clang-format: \
+format-cpp: \
 		include/grafiins.hpp \
 		examples/graph.cpp
 	clang-format -i $^
 
-black: scripts/plot_graph.py
+format-python: scripts/plot_graph.py
 	black $^
 
-lint: cppcheck
+format-json: scripts/plot_graph_config.schema.json
+	jq . \
+		scripts/plot_graph_config.schema.json \
+		| sponge \
+		scripts/plot_graph_config.schema.json
 
-cppcheck: include/grafiins.hpp
+lint: lint-cpp lint-python
+
+lint-cpp: include/grafiins.hpp
 	cppcheck \
 		--enable=warning,portability,performance \
 		--enable=style,information \
@@ -69,10 +78,16 @@ cppcheck: include/grafiins.hpp
 		-I./rododendrs/include \
 		$^
 
+lint-python: scripts/plot_graph.py
+	pylint $^
+	flake8 $^
+
 clean:
 	rm -rf `find . -name "*.o"`
 	rm -rf `find . -name "*.csv"`
 	rm -rf `find . -name "*.svg"`
+	rm -rf `find . -name "*.png"`
+	rm -rf `find . -name "*.txt"`
 
 distclean: clean
 	rm -rf garaza

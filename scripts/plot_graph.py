@@ -1,10 +1,14 @@
+"""
+Plot graph.
+"""
+
 import argparse
 import json
 import os
+import pathlib
 import jsonschema
 import numpy as np
 import pandas as pd
-import pathlib
 import pydot
 
 CONFIG_SCHEMA_PATH = os.path.join(
@@ -30,9 +34,9 @@ parser.add_argument(
 )
 args = parser.parse_args()
 
-with open(CONFIG_SCHEMA_PATH) as f:
+with open(CONFIG_SCHEMA_PATH, encoding="UTF-8") as f:
     config_schema = json.load(f)
-with open(args.config) as f:
+with open(args.config, encoding="UTF-8") as f:
     config_json = json.load(f)
 if args.config_section:
     config_json = config_json[args.config_section]
