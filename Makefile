@@ -1,5 +1,6 @@
 .PHONY: \
 	all \
+	venv \
 	examples \
 	examples-graph \
 	format \
@@ -13,6 +14,10 @@
 	distclean
 
 all: examples
+
+venv: requirements.txt
+	python3 -m venv venv
+	./venv/bin/pip3 install --no-cache-dir --requirement requirements.txt
 
 garaza:
 	git clone git@github.com:viktorsboroviks/garaza.git
@@ -40,7 +45,7 @@ graph.o: garaza rododendrs examples/graph.cpp
 		-I./rododendrs/include \
 		examples/graph.cpp -o $@
 
-format: format-cpp format-python format-json
+format: venv format-cpp format-python format-json
 
 format-cpp: \
 		include/grafiins.hpp \
@@ -48,7 +53,8 @@ format-cpp: \
 	clang-format -i $^
 
 format-python: scripts/plot_graph.py
-	black $^
+	source ./venv/bin/activate; \
+		black $^
 
 format-json: scripts/plot_graph_config.schema.json
 	jq . \
@@ -79,8 +85,9 @@ lint-cpp: include/grafiins.hpp
 		$^
 
 lint-python: scripts/plot_graph.py
-	pylint $^
-	flake8 $^
+	source ./venv/bin/activate; \
+		pylint $^; \
+		flake8 $^
 
 clean:
 	rm -rf `find . -name "*.o"`

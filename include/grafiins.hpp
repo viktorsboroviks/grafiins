@@ -284,6 +284,54 @@ public:
         return i;
     }
 
+    void move_edge_src(size_t ei, size_t src_vi)
+    {
+        assert(_edges.contains_i(ei));
+        assert(_vertices.contains_i(src_vi));
+
+        TEdge* e = _edges.at(ei);
+        assert(e != nullptr);
+        assert(e->_src_vertex_i.has_value());
+        assert(e->_dst_vertex_i.has_value());
+        assert(e->_src_vertex_i.value() != src_vi);
+        assert(e->_dst_vertex_i.has_value() != src_vi);
+
+        // vertex: disconnect
+        const size_t old_src_vi = e->_src_vertex_i.value();
+        assert(_vertices.contains_i(old_src_vi));
+        _vertices.at(old_src_vi)->_out_edges_i.erase(ei);
+
+        // vertex: connect
+        _vertices.at(src_vi)->_out_edges_i.insert(ei);
+
+        // edge: reconnect
+        e->_src_vertex_i.emplace(src_vi);
+    }
+
+    void move_edge_dst(size_t ei, size_t dst_vi)
+    {
+        assert(_edges.contains_i(ei));
+        assert(_vertices.contains_i(dst_vi));
+
+        TEdge* e = _edges.at(ei);
+        assert(e != nullptr);
+        assert(e->_src_vertex_i.has_value());
+        assert(e->_dst_vertex_i.has_value());
+        assert(e->_dst_vertex_i.value() != dst_vi);
+        assert(e->_src_vertex_i.has_value() != dst_vi);
+
+        // vertex: disconnect
+        const size_t old_dst_vi = e->_dst_vertex_i.value();
+        assert(_vertices.contains_i(old_dst_vi));
+        _vertices.at(old_dst_vi)->_in_edges_i.erase(ei);
+
+        // vertex: connect
+        _vertices.at(dst_vi)->_in_edges_i.insert(ei);
+
+        // edge: reconnect
+        e->_dst_vertex_i.emplace(dst_vi);
+    }
+
     void to_csv(const std::string& vertex_filepath,
                 const std::string& edge_filepath)
     {
